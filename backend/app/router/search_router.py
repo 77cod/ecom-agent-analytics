@@ -4,8 +4,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 
-from service import WebSearchService, ServiceConfig
-from schemas import WebSearchRequest, WebSearchResponse
+from backend.app.service import WebSearchService, ServiceConfig
+from backend.app.schemas import WebSearchRequest, WebSearchResponse
 
 # Create router instance
 router = APIRouter(prefix="/search", tags=["search"])

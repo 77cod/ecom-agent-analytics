@@ -36,16 +36,11 @@ except ImportError:
 
 # 本地知识库搜索依赖
 try:
-    from service.milvus_service import MilvusService
-    from service.embedding_service import generate_embedding
+    from backend.app.service.milvus_service import MilvusService
+    from backend.app.service.embedding_service import generate_embedding
     MILVUS_AVAILABLE = True
 except ImportError:
-    try:
-        from app.service.milvus_service import MilvusService
-        from app.service.embedding_service import generate_embedding
-        MILVUS_AVAILABLE = True
-    except ImportError:
-        MILVUS_AVAILABLE = False
+    MILVUS_AVAILABLE = False
 
 
 class DeepScout(BaseAgent):

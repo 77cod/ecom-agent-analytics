@@ -14,7 +14,7 @@ from datetime import datetime
 from sqlalchemy import Column, String, Text, DateTime, Float, Integer, Date
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 
-from core.database import Base
+from backend.app.core.database import Base
 
 
 class IndustryStats(Base):

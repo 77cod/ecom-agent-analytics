@@ -8,12 +8,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 
-from core.database import get_db
-from models.user import User
-from router.auth_router import get_current_user_required
-from service.database_explorer import DatabaseExplorer
-from service.text2sql_service import Text2SQLService
-from config.llm_config import get_config
+from backend.app.core.database import get_db
+from backend.app.models.user import User
+from backend.app.router.auth_router import get_current_user_required
+from backend.app.service.database_explorer import DatabaseExplorer
+from backend.app.service.text2sql_service import Text2SQLService
+from backend.app.config.llm_config import get_config
 
 router = APIRouter(prefix="/database", tags=["数据库探索"])
 

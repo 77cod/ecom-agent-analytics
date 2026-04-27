@@ -16,9 +16,9 @@ from typing import Dict, Any, List, Optional
 import httpx
 from sqlalchemy.orm import Session
 
-from models.news import IndustryNews, BiddingInfo, NewsCollectionTask
-from service.bidding_service import get_bidding_service
-from config.industry_config import get_industry_config, get_all_industries
+from backend.app.models.news import IndustryNews, BiddingInfo, NewsCollectionTask
+from backend.app.service.bidding_service import get_bidding_service
+from backend.app.config.industry_config import get_industry_config, get_all_industries
 
 logger = logging.getLogger(__name__)
 

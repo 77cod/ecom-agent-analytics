@@ -9,11 +9,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, BackgroundTasks, Form
 from sqlalchemy.orm import Session
 
-from core.database import get_db
-from models.chat import ChatAttachment, ChatSession
-from models.user import User
-from router.auth_router import get_current_user
-from schemas.chat import AttachmentResponse, AttachmentListResponse
+from backend.app.core.database import get_db
+from backend.app.models.chat import ChatAttachment, ChatSession
+from backend.app.models.user import User
+from backend.app.router.auth_router import get_current_user
+from backend.app.schemas.chat import AttachmentResponse, AttachmentListResponse
 
 router = APIRouter(prefix="/attachments", tags=["聊天附件"])
 

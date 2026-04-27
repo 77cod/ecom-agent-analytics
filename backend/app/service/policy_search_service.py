@@ -12,7 +12,7 @@ from pymilvus import (
     DataType,
     utility,
 )
-from service.embedding_service import generate_embedding
+from backend.app.service.embedding_service import generate_embedding
 
 
 class PolicySearchService:

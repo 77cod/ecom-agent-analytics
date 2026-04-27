@@ -40,15 +40,7 @@ from .state import ResearchState, ResearchPhase, create_initial_state
 from .agents import ChiefArchitect, DeepScout, CodeWizard, CriticMaster, LeadWriter, DataAnalyst
 
 # 导入检查点服务
-try:
-    from service.checkpoint_service import get_checkpoint_service
-except ImportError:
-    try:
-        from app.service.checkpoint_service import get_checkpoint_service
-    except ImportError:
-        # 兼容直接运行脚本的情况
-        def get_checkpoint_service():
-            return None
+from backend.app.service.checkpoint_service import get_checkpoint_service
 
 # 导入配置
 try:

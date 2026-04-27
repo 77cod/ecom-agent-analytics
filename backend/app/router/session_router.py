@@ -8,11 +8,11 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from core.database import get_db
-from models.chat import ChatSession, ChatMessage
-from models.user import User
-from router.auth_router import get_current_user_required, get_current_user
-from schemas.chat import (
+from backend.app.core.database import get_db
+from backend.app.models.chat import ChatSession, ChatMessage
+from backend.app.models.user import User
+from backend.app.router.auth_router import get_current_user_required, get_current_user
+from backend.app.schemas.chat import (
     SessionCreate,
     SessionUpdate,
     SessionResponse,

@@ -9,7 +9,7 @@ from datetime import datetime
 from sqlalchemy import Column, String, Text, DateTime, Integer, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 
-from core.database import Base
+from backend.app.core.database import Base
 
 
 class IndustryNews(Base):

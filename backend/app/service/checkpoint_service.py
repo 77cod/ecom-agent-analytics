@@ -9,8 +9,8 @@ from uuid import UUID
 from datetime import datetime
 from sqlalchemy.orm import Session
 
-from models.research import ResearchCheckpoint
-from core.database import SessionLocal
+from backend.app.models.research import ResearchCheckpoint
+from backend.app.core.database import SessionLocal
 
 logger = logging.getLogger(__name__)
 

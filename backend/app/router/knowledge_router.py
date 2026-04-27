@@ -9,11 +9,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, BackgroundTasks
 from sqlalchemy.orm import Session
 
-from core.database import get_db
-from models.knowledge import KnowledgeBase, Document
-from models.user import User
-from router.auth_router import get_current_user_required
-from schemas.knowledge import (
+from backend.app.core.database import get_db
+from backend.app.models.knowledge import KnowledgeBase, Document
+from backend.app.models.user import User
+from backend.app.router.auth_router import get_current_user_required
+from backend.app.schemas.knowledge import (
     KnowledgeBaseCreate,
     KnowledgeBaseUpdate,
     KnowledgeBaseResponse,

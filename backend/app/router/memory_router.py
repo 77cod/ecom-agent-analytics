@@ -9,11 +9,11 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel, Field
 from datetime import datetime
 
-from core.database import get_db
-from models.chat import LongTermMemory, ChatSession, ChatMessage
-from models.user import User
-from router.auth_router import get_current_user_required
-from service.memory_service import get_memory_service
+from backend.app.core.database import get_db
+from backend.app.models.chat import LongTermMemory, ChatSession, ChatMessage
+from backend.app.models.user import User
+from backend.app.router.auth_router import get_current_user_required
+from backend.app.service.memory_service import get_memory_service
 
 router = APIRouter(prefix="/memories", tags=["长期记忆"])
 

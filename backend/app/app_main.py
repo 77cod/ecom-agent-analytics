@@ -14,17 +14,16 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-from router import document_router, search_router, chat_router, research_router
-from router.auth_router import router as auth_router
-from router.session_router import router as session_router
-from router.knowledge_router import router as knowledge_router
-from router.attachment_router import router as attachment_router
-from router.memory_router import router as memory_router
-from router.database_router import router as database_router
-from router.news_router import router as news_router
-from core.database import engine, Base
-# 导入所有模型以确保它们被注册
-from models import (
+from backend.app.router import document_router, search_router, chat_router, research_router
+from backend.app.router.auth_router import router as auth_router
+from backend.app.router.session_router import router as session_router
+from backend.app.router.knowledge_router import router as knowledge_router
+from backend.app.router.attachment_router import router as attachment_router
+from backend.app.router.memory_router import router as memory_router
+from backend.app.router.database_router import router as database_router
+from backend.app.router.news_router import router as news_router
+from backend.app.core.database import engine, Base
+from backend.app.models import (
     User, ChatSession, ChatMessage, ChatAttachment, LongTermMemory,
     KnowledgeBase, Document, IndustryStats, CompanyData, PolicyData,
     ResearchCheckpoint, IndustryNews, BiddingInfo, NewsCollectionTask
@@ -42,7 +41,7 @@ async def lifespan(app: FastAPI):
 
     # 初始化定时任务调度器并检查数据
     try:
-        from service.scheduler_service import init_scheduler_and_check_data
+        from backend.app.service.scheduler_service import init_scheduler_and_check_data
         await init_scheduler_and_check_data()
         logger.info("定时任务调度器启动成功")
     except Exception as e:
@@ -53,7 +52,7 @@ async def lifespan(app: FastAPI):
     # 关闭时执行
     logger.info("应用关闭中...")
     try:
-        from service.scheduler_service import get_scheduler_service
+        from backend.app.service.scheduler_service import get_scheduler_service
         scheduler = get_scheduler_service()
         scheduler.stop()
     except Exception as e:

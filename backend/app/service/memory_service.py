@@ -22,9 +22,9 @@ from openai import OpenAI
 from dotenv import load_dotenv
 load_dotenv()
 
-from models.chat import ChatSession, ChatMessage, LongTermMemory
-from service.embedding_service import generate_embedding
-from service.milvus_service import get_milvus_service, MilvusService
+from backend.app.models.chat import ChatSession, ChatMessage, LongTermMemory
+from backend.app.service.embedding_service import generate_embedding
+from backend.app.service.milvus_service import get_milvus_service, MilvusService
 
 # 记忆触发阈值
 MEMORY_TOKEN_THRESHOLD = 10000  # 超过此 token 数触发记忆压缩

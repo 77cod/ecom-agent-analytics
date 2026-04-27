@@ -8,7 +8,7 @@ from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Integer, BigI
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from core.database import Base
+from backend.app.core.database import Base
 
 
 class KnowledgeBase(Base):

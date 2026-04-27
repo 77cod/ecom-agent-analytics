@@ -17,15 +17,7 @@ from datetime import datetime
 from .graph import DeepResearchGraph
 
 # 导入配置
-try:
-    from config.llm_config import get_config
-except ImportError:
-    try:
-        from app.config.llm_config import get_config
-    except ImportError:
-        import sys
-        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-        from config.llm_config import get_config
+from backend.app.config.llm_config import get_config
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 logger = logging.getLogger("DeepResearchV2Service")

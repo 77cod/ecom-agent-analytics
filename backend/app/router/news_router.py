@@ -10,10 +10,10 @@ from sqlalchemy.orm import Session
 from typing import Optional, List
 from pydantic import BaseModel
 
-from core.database import get_db
-from service.news_collection_service import get_news_collection_service
-from service.scheduler_service import get_scheduler_service
-from config.industry_config import get_all_industries, get_industry_config
+from backend.app.core.database import get_db
+from backend.app.service.news_collection_service import get_news_collection_service
+from backend.app.service.scheduler_service import get_scheduler_service
+from backend.app.config.industry_config import get_all_industries, get_industry_config
 
 logger = logging.getLogger(__name__)
 

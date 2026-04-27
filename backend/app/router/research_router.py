@@ -8,12 +8,12 @@ from pydantic import BaseModel
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 import logging
 
-from service import ResearchService, ServiceConfig
-from service.dr_g import serialize_event  # 导入序列化函数
-from core.redis_client import cache  # 导入 Redis 缓存
+from backend.app.service import ResearchService, ServiceConfig
+from backend.app.service.dr_g import serialize_event  # 导入序列化函数
+from backend.app.core.redis_client import cache  # 导入 Redis 缓存
 
 # V2 导入
-from service.deep_research_v2.service import DeepResearchV2Service
+from backend.app.service.deep_research_v2.service import DeepResearchV2Service
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("ResearchRouter")

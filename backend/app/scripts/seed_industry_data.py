@@ -11,8 +11,8 @@ from datetime import date
 # 添加项目路径
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.database import SessionLocal, engine, Base
-from models.industry_data import IndustryStats, CompanyData, PolicyData
+from backend.app.core.database import SessionLocal, engine, Base
+from backend.app.models.industry_data import IndustryStats, CompanyData, PolicyData
 
 
 def seed_industry_stats(db):

@@ -8,9 +8,9 @@ from typing import Optional
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, Query
 from starlette.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_500_INTERNAL_SERVER_ERROR
 
-from service import DocumentService, ServiceConfig
-from service.docmind_service import process_document_with_docmind
-from schemas.document import (
+from backend.app.service import DocumentService, ServiceConfig
+from backend.app.service.docmind_service import process_document_with_docmind
+from backend.app.schemas.document import (
     DeleteDocumentsRequest,
     RetrieveDocumentsRequest,
     UploadDocumentResponse,

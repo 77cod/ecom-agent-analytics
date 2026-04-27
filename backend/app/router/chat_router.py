@@ -6,11 +6,11 @@ from fastapi.responses import StreamingResponse
 from starlette.status import HTTP_200_OK, HTTP_500_INTERNAL_SERVER_ERROR
 from sqlalchemy.orm import Session
 
-from core.database import get_db
-from models.chat import ChatAttachment
-from service import DocumentService, WebSearchService, ChatService, SessionService, ServiceConfig
-from service.retrieval_service import retrieve_content
-from schemas import ChatRequest, LegacySessionResponse, ChatWithAttachmentsRequest
+from backend.app.core.database import get_db
+from backend.app.models.chat import ChatAttachment
+from backend.app.service import DocumentService, WebSearchService, ChatService, SessionService, ServiceConfig
+from backend.app.service.retrieval_service import retrieve_content
+from backend.app.schemas import ChatRequest, LegacySessionResponse, ChatWithAttachmentsRequest
 
 # Create router instance
 router = APIRouter(prefix="/chat", tags=["chat"])
