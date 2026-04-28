@@ -69,8 +69,8 @@ export default function LoginPage() {
                 <path d="M24 4V24M24 24L4 14M24 24L44 14M24 24V44" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
               </svg>
             </div>
-            <h1 className={styles['brand-title']}>行业信息助手</h1>
-            <p className={styles['brand-subtitle']}>Intelligence Assistant</p>
+            <h1 className={styles['brand-title']}>智能电商运营分析平台</h1>
+            <p className={styles['brand-subtitle']}>E-commerce Operations Intelligence</p>
             <div className={styles['brand-features']}>
               <div className={styles['feature-item']}>
                 <span className={styles['feature-icon']} />

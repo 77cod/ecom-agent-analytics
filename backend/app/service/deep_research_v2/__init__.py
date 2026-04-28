@@ -11,9 +11,9 @@ DeepResearch V2.0 - 生成式多智能体协作网络
 
 使用方式：
 ```python
-from service.deep_research_v2 import DeepResearchService
+from service.deep_research_v2.service import DeepResearchV2Service
 
-service = DeepResearchService(
+service = DeepResearchV2Service(
     llm_api_key="your-api-key",
     llm_base_url="https://api.example.com",
     search_api_key="your-search-key"

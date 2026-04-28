@@ -1,12 +1,12 @@
 
 """
-DeepResearch V2.0 - 首席笔杆 Agent (LeadWriter)
+电商运营分析 V2.0 - 首席笔杆 Agent (LeadWriter)
 
 职责：
-1. 深度写作 - 将零散信息串联成逻辑严密的报告
+1. 深度写作 - 将运营数据串联成逻辑严密的运营分析报告
 2. Markdown排版 - 专业的格式排版
 3. 图文混排 - 整合文字、图表、数据
-4. 参考文献 - 规范的引用格式
+4. 行动建议 - 基于数据洞察生成可执行的运营建议
 """
 
 import uuid
@@ -19,21 +19,21 @@ from ..state import ResearchState, ResearchPhase
 
 class LeadWriter(BaseAgent):
     """
-    首席笔杆 - 最终输出的打磨者
+    首席笔杆 - 电商运营分析报告的撰写者
 
     特点：
     - 深度写作能力
-    - 专业的行业研究报告风格
+    - 专业的电商运营分析报告风格
     - 逻辑严密的叙述结构
-    - 规范的引用和排版
+    - 数据驱动的行动建议生成
     """
 
-    SECTION_WRITING_PROMPT = """你是一位顶级投行研究部的首席分析师，擅长撰写深度行业研究报告。
+    SECTION_WRITING_PROMPT = """你是一位顶级的电商运营分析师，擅长撰写深度运营分析报告。
 
-## 研究主题
+## 分析主题
 {query}
 
-## 当前章节信息
+## 当前分析维度信息
 标题: {section_title}
 描述: {section_description}
 类型: {section_type}
@@ -53,75 +53,91 @@ class LeadWriter(BaseAgent):
 {charts_info}
 
 ## 写作要求
-1. **专业性**：使用行业术语，体现专业深度
+1. **专业性**：使用电商运营术语（GMV/客单价/转化率/ROI/环比等），体现专业深度
 2. **逻辑性**：论点清晰，论据充分，层层递进
-3. **数据支撑**：关键观点必须有数据或事实支撑
-4. **引用规范**：使用可点击链接格式 [来源名称](URL)，如 [艾瑞咨询](https://www.iresearch.cn)
+3. **数据支撑**：关键观点必须有运营数据支撑，标注具体数值和变化幅度
+4. **引用规范**：标注数据来源（店铺后台、平台数据、竞品监控等）
 5. **图表整合**：在合适位置插入图表引用 ![图表标题](chart_id)
-6. **字数控制**：本章节 500-1000 字
-7. **不要重复标题**：正文开头不要再写章节标题
+6. **字数控制**：本维度 500-1000 字
+7. **不要重复标题**：正文开头不要再写维度标题
 
 ## 输出格式
 ```json
 {{
-    "content": "章节正文内容（Markdown格式，不包含章节标题）",
-    "key_points": ["本章节的核心要点"],
+    "content": "分析维度正文内容（Markdown格式，不包含维度标题）",
+    "key_points": ["本维度的核心要点"],
     "citations": [
         {{"source": "来源名称", "url": "完整URL"}}
     ],
-    "suggested_improvements": ["如果有更多信息可以改进的地方"]
+    "actionable_recommendations": ["基于本维度数据的具体运营建议"],
+    "data_highlights": ["关键数据发现"]
 }}
 ```
 
 ## 写作风格示例
-- 好的开头："2024年，中国AI芯片市场正经历深刻变革。根据[IDC数据](https://www.idc.com)，市场规模达到..."
-- 避免的开头："关于AI芯片，首先我们来看..."
-- 数据引用示例："市场规模达5000亿元（[艾瑞咨询报告](https://www.iresearch.cn/report)）"
+- 好的开头："8月主营品类GMV达285万元，环比增长10.5%，其中直播渠道贡献45%销售额..."
+- 避免的开头："关于主营品类的销售情况，首先我们来看..."
+- 数据引用示例："客单价128元（环比+5元），转化率3.2%（环比+0.3pp）"
 
 开始撰写："""
 
-    SYNTHESIS_PROMPT = """你是首席笔杆，需要将各章节整合成完整的研究报告。
+    SYNTHESIS_PROMPT = """你是首席运营分析师，需要将各分析维度整合成完整的电商运营分析报告。
 
-## 研究主题
+## 分析主题
 {query}
 
-## 各章节内容
+## 各分析维度内容
 {sections_content}
 
-## 收集的所有引用来源
+## 收集的所有数据来源
 {all_sources}
 
 ## 任务
-1. 撰写报告摘要（Executive Summary）
-2. 整合各章节，确保逻辑连贯，使用层级编号
-3. 撰写结论与展望
-4. 整理参考文献列表（确保链接可点击）
+1. 撰写运营概览（Executive Summary）
+2. 整合各分析维度，确保逻辑连贯，使用层级编号
+3. 基于所有数据洞察，生成可执行的运营行动建议
+4. 撰写结论与展望
+5. 整理数据来源列表
 
 ## 关键要求
 
 ### 1. 标题编号规则（必须严格遵守）
-- 一级标题：1、2、3...（如：1 市场概况）
-- 二级标题：1.1、1.2、2.1...（如：1.1 市场规模）
-- 三级标题：1.1.1、1.1.2...（如：1.1.1 全球市场）
-- **禁止标题重复**：每个标题必须唯一，不要在正文中重复章节标题
+- 一级标题：1、2、3...（如：1 销售概况）
+- 二级标题：1.1、1.2、2.1...（如：1.1 GMV趋势）
+- 三级标题：1.1.1、1.1.2...（如：1.1.1 日销售额波动）
+- **禁止标题重复**：每个标题必须唯一，不要在正文中重复维度标题
 
-### 2. 引用格式规则（确保可点击）
-- 行内引用：使用 [来源名称](URL) 格式，如 [艾瑞咨询](https://www.iresearch.cn)
-- 数据引用：在数据后标注来源，如"市场规模达5000亿元（[IDC报告](https://www.idc.com)）"
-- 文末参考文献：使用有序列表 + 可点击链接格式
+### 2. 数据标注规则
+- 关键指标加粗：**GMV 285万元**、**客单价128元**
+- 变化幅度标注：环比+10.5%、同比-3.2pp
+- 数据来源标注：在数据后标注来源
 
-### 3. 报告结构规范
+### 3. 运营行动建议规则（重要！）
+- 每条建议必须基于报告中的具体数据发现
+- 建议要具体、可执行、有优先级
+- 每条建议包含：行动内容、预期效果、优先级（高/中/低）
+
+### 4. 报告结构规范
 - 不要在报告开头使用 # 一级标题
-- 直接从"执行摘要"开始
-- 各章节使用 ## 二级标题
-- 子章节使用 ### 三级标题
+- 直接从"运营概览"开始
+- 各维度使用 ## 二级标题
+- 子维度使用 ### 三级标题
 
 ## 输出格式
 ```json
 {{
-    "executive_summary": "执行摘要（300-500字）",
-    "full_report": "完整报告（Markdown格式，按下方结构生成）",
+    "executive_summary": "运营概览（300-500字）",
+    "full_report": "完整运营分析报告（Markdown格式，按下方结构生成）",
     "conclusions": ["核心结论1", "核心结论2"],
+    "actionable_recommendations": [
+        {{"action": "具体行动内容", "rationale": "基于的数据发现", "expected_impact": "预期效果", "priority": "高/中/低"}}
+    ],
+    "key_metrics_summary": {{
+        "gmv": "总GMV及变化",
+        "orders": "总订单量及变化",
+        "aov": "客单价及变化",
+        "top_product": "TOP1商品"
+    }},
     "outlook": "未来展望",
     "references": [
         {{"id": 1, "title": "来源标题", "url": "完整URL", "author": "作者/机构", "date": "日期"}}
@@ -131,21 +147,21 @@ class LeadWriter(BaseAgent):
 
 ## 报告结构模板
 ```markdown
-## 执行摘要
+## 运营概览
 
-[300-500字的研究摘要]
+[300-500字的运营概览，包含核心KPI摘要]
 
 ---
 
-## 1 [第一章标题]
+## 1 [第一分析维度标题]
 
-[章节引言段落]
+[维度引言段落]
 
-### 1.1 [子章节标题]
+### 1.1 [子维度标题]
 
-[内容，包含数据引用如：根据[来源名](URL)，...]
+[内容，包含数据如：GMV达285万元（环比+10.5%）]
 
-### 1.2 [子章节标题]
+### 1.2 [子维度标题]
 
 #### 1.2.1 [三级标题]
 
@@ -153,10 +169,25 @@ class LeadWriter(BaseAgent):
 
 ---
 
-## 2 [第二章标题]
+## 2 [第二分析维度标题]
 
-### 2.1 [子章节标题]
+### 2.1 [子维度标题]
 
+...
+
+---
+
+## 运营行动建议
+
+### 高优先级
+1. **【行动标题】** - 具体行动内容...
+   - 数据依据：...
+   - 预期效果：...
+
+### 中优先级
+...
+
+### 低优先级
 ...
 
 ---
@@ -167,19 +198,19 @@ class LeadWriter(BaseAgent):
 1. [结论1]
 2. [结论2]
 
-### 未来展望
+### 下月展望
 [展望内容]
 
 ---
 
-## 参考文献
+## 数据来源
 
-1. [来源标题1](URL1) - 作者/机构, 日期
-2. [来源标题2](URL2) - 作者/机构, 日期
+1. [来源标题1](URL1)
+2. [来源标题2](URL2)
 ...
 ```"""
 
-    REVISION_PROMPT = """你是首席笔杆，需要根据审核反馈修订报告。
+    REVISION_PROMPT = """你是首席运营分析师，需要根据审核反馈修订运营分析报告。
 
 ## 原始报告
 {original_content}
@@ -191,18 +222,19 @@ class LeadWriter(BaseAgent):
 {new_info}
 
 ## 任务
-根据反馈修订报告，解决指出的问题。
+根据反馈修订运营分析报告，解决指出的问题。
 
 ## 修订原则
 1. 针对性修改：只修改有问题的部分
-2. 补充来源：对缺少来源的观点补充引用
-3. 修正错误：纠正事实错误或逻辑漏洞
-4. 保持风格：修订后保持报告整体风格一致
+2. 补充数据来源：对缺少数据支撑的观点补充来源
+3. 修正错误：纠正数据错误或分析逻辑漏洞
+4. 优化建议：使运营行动建议更加具体和可执行
+5. 保持风格：修订后保持报告整体风格一致
 
 输出JSON：
 ```json
 {{
-    "revised_content": "修订后的内容",
+    "revised_content": "修订后的运营分析报告内容",
     "changes_made": ["修改1", "修改2"],
     "addressed_issues": ["已解决的问题ID"],
     "unable_to_address": ["无法解决的问题及原因"]
@@ -235,14 +267,14 @@ class LeadWriter(BaseAgent):
             "step_id": f"step_writing_{uuid.uuid4().hex[:8]}",
             "step_type": "writing",
             "title": "内容生成",
-            "subtitle": "撰写研究报告",
+            "subtitle": "撰写运营分析报告",
             "status": "running",
             "stats": {"sections_count": len(state["outline"]), "word_count": 0}
         })
 
         self.add_message(state, "thought", {
             "agent": self.name,
-            "content": "开始撰写深度研究报告..."
+            "content": "开始撰写电商运营分析报告..."
         })
 
         # 逐章节撰写
@@ -258,7 +290,7 @@ class LeadWriter(BaseAgent):
         self.add_message(state, "research_step", {
             "step_type": "writing",
             "title": "内容生成",
-            "subtitle": "撰写研究报告",
+            "subtitle": "撰写运营分析报告",
             "status": "completed",
             "stats": {
                 "sections_count": len(state["outline"]),
@@ -317,11 +349,11 @@ class LeadWriter(BaseAgent):
         )
 
         response = await self.call_llm(
-            system_prompt="你是顶级的行业研究分析师，擅长撰写专业的研究报告。",
+            system_prompt="你是顶级的电商运营分析师，擅长撰写专业的运营分析报告。",
             user_prompt=prompt,
             json_mode=True,
             temperature=0.4,
-            max_tokens=16000  # 拉满到最大值
+            max_tokens=8000
         )
 
         result = self.parse_json_response(response)
@@ -360,7 +392,7 @@ class LeadWriter(BaseAgent):
         """整合完整报告"""
         self.add_message(state, "thought", {
             "agent": self.name,
-            "content": "正在整合各章节，生成完整研究报告..."
+            "content": "正在整合各分析维度，生成完整运营分析报告..."
         })
 
         # 准备各章节内容
@@ -389,11 +421,11 @@ class LeadWriter(BaseAgent):
 
         self.logger.info(f"[LeadWriter] 调用 LLM 整合报告...")
         response = await self.call_llm(
-            system_prompt="你是资深的研究报告主编，擅长整合和打磨最终报告。",
+            system_prompt="你是资深的运营分析报告主编，擅长整合和打磨最终运营分析报告。",
             user_prompt=prompt,
             json_mode=True,
             temperature=0.3,
-            max_tokens=16000  # 拉满到最大值
+            max_tokens=8000
         )
 
         result = self.parse_json_response(response)
@@ -415,7 +447,7 @@ class LeadWriter(BaseAgent):
         else:
             # JSON 解析失败时的备选方案：使用已有章节内容组装报告
             self.logger.warning(f"[LeadWriter] ⚠️ JSON 解析失败，使用章节内容作为备选")
-            fallback_report = f"# {state['query']} 研究报告\n\n"
+            fallback_report = f"# {state['query']} 运营分析报告\n\n"
             for section in state["outline"]:
                 section_id = section["id"]
                 content = state["draft_sections"].get(section_id, "")
@@ -425,11 +457,15 @@ class LeadWriter(BaseAgent):
             self.logger.info(f"[LeadWriter] 使用备选报告，长度: {len(state['final_report'])}")
 
         # 发送报告完成事件 - 包含完整报告内容用于前端流式显示
+        actionable_recommendations = result.get("actionable_recommendations", []) if result else []
+        key_metrics_summary = result.get("key_metrics_summary", {}) if result else {}
         self.add_message(state, "report_draft", {
             "agent": self.name,
             "content": state["final_report"],  # 完整报告内容
             "executive_summary": executive_summary,
             "conclusions": conclusions,
+            "actionable_recommendations": actionable_recommendations,
+            "key_metrics_summary": key_metrics_summary,
             "word_count": len(state["final_report"]),
             "references_count": len(state["references"])
         })
@@ -438,7 +474,7 @@ class LeadWriter(BaseAgent):
         """根据反馈修订报告"""
         self.add_message(state, "thought", {
             "agent": self.name,
-            "content": "根据审核反馈修订报告..."
+            "content": "根据审核反馈修订运营分析报告..."
         })
 
         # 收集未解决的问题
@@ -458,11 +494,11 @@ class LeadWriter(BaseAgent):
         )
 
         response = await self.call_llm(
-            system_prompt="你是负责修订报告的资深编辑。",
+            system_prompt="你是负责修订运营分析报告的资深编辑。",
             user_prompt=prompt,
             json_mode=True,
             temperature=0.3,
-            max_tokens=16000  # 拉满到最大值
+            max_tokens=8000
         )
 
         result = self.parse_json_response(response)

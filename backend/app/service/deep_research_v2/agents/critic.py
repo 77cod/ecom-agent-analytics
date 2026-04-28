@@ -323,7 +323,7 @@ class CriticMaster(BaseAgent):
             user_prompt=prompt,
             json_mode=True,
             temperature=0.2,
-            max_tokens=16000  # 拉满到最大值
+            max_tokens=8000
         )
         self.logger.info(f"[CriticMaster] LLM 响应长度: {len(response)}")
 

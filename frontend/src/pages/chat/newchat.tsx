@@ -26,18 +26,36 @@ export default function NewChat() {
   // 获取当前行业名称
   const currentIndustryName = useMemo(() => {
     const current = industry.industries.find(i => i.id === industry.currentIndustryId)
-    return current?.name || '行业助手'
+    return current?.name || '电商运营分析'
   }, [industry.currentIndustryId, industry.industries])
 
   // 推荐问题 - 根据行业生成，只要3个
   const recommendQuestions = useMemo(() => {
-    const industryName = currentIndustryName
-    return [
-      `${industryName}市场规模`,
-      `${industryName}主要企业`,
-      `${industryName}政策解读`,
-    ]
-  }, [currentIndustryName])
+    const industryId = industry.currentIndustryId
+    const questionsMap: Record<string, string[]> = {
+      fashion: [
+        '分析服装鞋包本月销售趋势和爆款排行',
+        '对比竞品价格策略和渠道表现',
+        '评估达人带货ROI和投放优化建议',
+      ],
+      beauty: [
+        '分析美妆个护精华液品类销售趋势和用户口碑',
+        '对比竞品敏感肌定位策略和价格差异',
+        '评估小红书和抖音达人投放效率对比',
+      ],
+      digital: [
+        '分析数码耳机品类销量变化和竞品竞争格局',
+        '评估学生平价产品线的增长机会',
+        '对比B站和抖音渠道达人带货ROI',
+      ],
+      food: [
+        '分析茶饮品类夏季销售趋势和毛利结构',
+        '对比竞品联名策略和高溢价路径',
+        '评估中秋礼品市场的增长机会',
+      ],
+    }
+    return questionsMap[industryId] || questionsMap.fashion
+  }, [industry.currentIndustryId])
 
   // 附件状态管理
   const [attachments, setAttachments] = useState<AttachmentInfo[]>([])

@@ -35,7 +35,7 @@ except ImportError:
     logging.warning("LangGraph not installed. Using simplified workflow.")
 
 from .state import ResearchState, ResearchPhase, create_initial_state
-from .agents import ChiefArchitect, DeepScout, CodeWizard, CriticMaster, LeadWriter, DataAnalyst
+from .agents import ChiefArchitect, DeepScout, DataQueryer, CodeWizard, CriticMaster, LeadWriter, DataAnalyst
 
 # 导入检查点服务
 from backend.app.service.checkpoint_service import get_checkpoint_service
@@ -59,13 +59,13 @@ logger = logging.getLogger("DeepResearchGraph")
 
 class DeepResearchGraph:
     """
-    DeepResearch V2.0 工作流图
+    DeepResearch V2.0 工作流图（电商版）
 
     实现完整的多智能体协作流程：
-    1. Plan (ChiefArchitect) - 分析问题，生成研究大纲
-    2. Research (DeepScout) - 并行深度搜索
-    3. Analyze (CodeWizard) - 数据分析和可视化
-    4. Write (LeadWriter) - 撰写报告
+    1. Plan (ChiefArchitect) - 分析问题，生成分析维度
+    2. Query (DataQueryer) - 查询电商数据（替代原 DeepScout 搜索）
+    3. Analyze (CodeWizard + DataAnalyst) - 数据分析和可视化
+    4. Write (LeadWriter) - 撰写运营分析报告
     5. Review (CriticMaster) - 对抗式审核
     6. Revise (LeadWriter) - 修订（如果需要）
     """
@@ -102,6 +102,11 @@ class DeepResearchGraph:
             self.llm_api_key, self.llm_base_url, self.search_api_key,
             config.agents.scout.model
         )
+        self.data_queryer = DataQueryer(
+            self.llm_api_key, self.llm_base_url,
+            config.agents.data_queryer.model,
+            use_mock=True  # True=mock数据跳过AI分析；False=真实爬虫数据启用AI提取
+        )
         self.data_analyst = DataAnalyst(
             self.llm_api_key, self.llm_base_url,
             config.agents.data_analyst.model
@@ -122,6 +127,7 @@ class DeepResearchGraph:
         logger.info(f"DeepResearchGraph initialized with models:")
         logger.info(f"  - Architect: {config.agents.architect.model}")
         logger.info(f"  - Scout: {config.agents.scout.model}")
+        logger.info(f"  - DataQueryer: {config.agents.data_queryer.model}")
         logger.info(f"  - DataAnalyst: {config.agents.data_analyst.model}")
         logger.info(f"  - Wizard: {config.agents.wizard.model}")
         logger.info(f"  - Critic: {config.agents.critic.model}")
@@ -234,18 +240,21 @@ class DeepResearchGraph:
         return dict(result)
 
     async def _research_node(self, state: ResearchState) -> Dict[str, Any]:
-        """研究节点"""
-        logger.info("Executing Research node...")
+        """研究/数据查询节点 - 电商版使用 DataQueryer 查询数据"""
+        logger.info("Executing Research node (DataQueryer)...")
         state = dict(state)
         state["phase"] = ResearchPhase.RESEARCHING.value
-        result = await self.scout.process(state)
+        result = await self.data_queryer.process(state)
         return dict(result)
 
     async def _analyze_node(self, state: ResearchState) -> Dict[str, Any]:
-        """分析节点"""
+        """分析节点 - 执行数据分析和代码生成"""
         logger.info("Executing Analyze node...")
         state = dict(state)
         state["phase"] = ResearchPhase.ANALYZING.value
+        # DataAnalyst: 提取和分析数据
+        state = await self.data_analyst.process(state)
+        # CodeWizard: 生成代码和图表
         result = await self.wizard.process(state)
         return dict(result)
 
@@ -287,7 +296,8 @@ class DeepResearchGraph:
         resume: bool = False,
         user_id: str = None,
         search_web: bool = True,
-        search_local: bool = False
+        search_local: bool = False,
+        industry_id: str = "fashion"
     ) -> AsyncGenerator[Dict[str, Any], None]:
         """
         执行研究流程（流式输出）
@@ -299,6 +309,7 @@ class DeepResearchGraph:
             user_id: 用户ID（用于检查点）
             search_web: 是否启用网络搜索（默认True）
             search_local: 是否启用本地知识库搜索（默认False）
+            industry_id: 行业ID（fashion/beauty/digital/food，默认fashion）
 
         Yields:
             SSE 事件字典
@@ -320,7 +331,8 @@ class DeepResearchGraph:
             state = create_initial_state(
                 query, session_id,
                 search_web=search_web,
-                search_local=search_local
+                search_local=search_local,
+                industry_id=industry_id
             )
             state["max_iterations"] = self.max_iterations
 
@@ -580,9 +592,9 @@ class DeepResearchGraph:
             if await check_cancelled():
                 yield {"type": "research_cancelled", "message": "研究已取消"}
                 return
-            yield {"type": "phase", "phase": "researching", "content": "开始深度搜索..."}
+            yield {"type": "phase", "phase": "researching", "content": "开始查询电商数据..."}
             state["phase"] = ResearchPhase.RESEARCHING.value
-            async for msg in run_agent_with_streaming(self.scout):
+            async for msg in run_agent_with_streaming(self.data_queryer):
                 yield msg
             state["messages"] = []
             # 保存检查点（含步骤信息）
@@ -591,7 +603,7 @@ class DeepResearchGraph:
                 "status": "completed",
                 "stats": {
                     "facts": len(state.get("facts", [])),
-                    "sources": len(state.get("references", []))
+                    "data_points": len(state.get("data_points", []))
                 }
             })
             if cp_event:
@@ -654,8 +666,8 @@ class DeepResearchGraph:
                     if await check_cancelled():
                         yield {"type": "research_cancelled", "message": "研究已取消"}
                         return
-                    yield {"type": "phase", "phase": "re_researching", "content": "根据审核反馈补充搜索..."}
-                    async for msg in run_agent_with_streaming(self.scout):
+                    yield {"type": "phase", "phase": "re_researching", "content": "根据审核反馈补充数据查询..."}
+                    async for msg in run_agent_with_streaming(self.data_queryer):
                         yield msg
                     state["messages"] = []
 
@@ -741,7 +753,7 @@ class DeepResearchGraph:
 
         # 依次执行各阶段
         state = await self.architect.process(state)
-        state = await self.scout.process(state)
+        state = await self.data_queryer.process(state)
         state = await self.data_analyst.process(state)
         state = await self.wizard.process(state)
         state = await self.writer.process(state)
@@ -755,7 +767,7 @@ class DeepResearchGraph:
 
             # 智能路由：需要补充搜索
             if state["phase"] == ResearchPhase.RE_RESEARCHING.value:
-                state = await self.scout.process(state)
+                state = await self.data_queryer.process(state)
                 state["phase"] = ResearchPhase.WRITING.value
                 state = await self.writer.process(state)
 

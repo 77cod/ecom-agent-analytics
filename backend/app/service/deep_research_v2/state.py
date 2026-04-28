@@ -113,6 +113,7 @@ class ResearchState(TypedDict):
     # 基础信息
     query: str                              # 用户原始问题
     session_id: str                         # 会话ID
+    industry_id: str                        # 行业ID（fashion/beauty/digital/food）
     phase: str                              # 当前阶段
     iteration: int                          # 当前迭代轮次
     max_iterations: int                     # 最大迭代次数
@@ -160,7 +161,8 @@ def create_initial_state(
     query: str,
     session_id: str,
     search_web: bool = True,
-    search_local: bool = False
+    search_local: bool = False,
+    industry_id: str = "fashion"
 ) -> ResearchState:
     """创建初始状态
 
@@ -169,10 +171,12 @@ def create_initial_state(
         session_id: 会话ID
         search_web: 是否启用网络搜索（默认True）
         search_local: 是否启用本地知识库搜索（默认False）
+        industry_id: 行业ID（fashion/beauty/digital/food，默认fashion）
     """
     return ResearchState(
         query=query,
         session_id=session_id,
+        industry_id=industry_id,
         phase=ResearchPhase.INIT.value,
         iteration=0,
         max_iterations=3,

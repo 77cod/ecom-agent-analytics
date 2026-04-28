@@ -166,6 +166,13 @@ URL: {url}
         search_api_key: str,
         model: str = "qwen-plus"
     ):
+        """初始化深度侦探Agent
+        Args:
+            llm_api_key: 大模型API密钥
+            llm_base_url: API基础地址
+            search_api_key: 搜索服务API密钥（博查搜索）
+            model: 使用的模型名称
+        """
         super().__init__(
             name="DeepScout",
             role="深度侦探",
@@ -174,8 +181,8 @@ URL: {url}
             model=model
         )
         self.search_api_key = search_api_key
-        self.search_cache: Dict[str, List] = {}
-        self.fact_fingerprints: Dict[str, str] = {}  # 事实指纹用于去重
+        self.search_cache: Dict[str, List] = {}          # 搜索缓存：避免重复搜相同关键词
+        self.fact_fingerprints: Dict[str, str] = {}      # 事实指纹：用于去重
 
         # 初始化本地知识库搜索服务
         self.milvus_service = None
@@ -187,7 +194,12 @@ URL: {url}
                 self.logger.warning(f"Failed to initialize Milvus service: {e}")
 
     async def process(self, state: ResearchState) -> ResearchState:
-        """处理入口"""
+        """主入口方法 - 根据研究阶段分发任务
+        处理三种情况：
+        1. 补充搜索阶段（RE_RESEARCHING）：审核后发现信息缺失，需要补充搜索
+        2. 正常研究阶段（PLANNING/RESEARCHING）：按大纲章节逐个搜索
+        3. 其他阶段：不处理，直接返回
+        """
         # 处理补充搜索阶段（审核后回退）
         if state["phase"] == ResearchPhase.RE_RESEARCHING.value:
             return await self._supplementary_research(state)
@@ -268,10 +280,9 @@ URL: {url}
         return state
 
     async def _supplementary_research(self, state: ResearchState) -> ResearchState:
-        """
-        补充搜索阶段 - 处理审核后发现的信息缺失
-
-        这个方法在 Critic 发现需要补充信息时被调用
+        """执行补充搜索 - 审核阶段发现信息缺失时调用
+        流程：拿到审核员的补充搜索关键词 → 逐个搜索 → AI分析提取事实 → 存到state
+        最多处理5个补充查询，搜索完成后将阶段切回写作阶段(WRITING)
         """
         pending_queries = state.get("pending_search_queries", [])
 
@@ -367,10 +378,10 @@ URL: {url}
         return state
 
     async def _fetch_stock_data_if_relevant(self, state: ResearchState) -> None:
-        """
-        自动识别查询中的上市公司，获取实时股票数据
-
-        当用户查询涉及上市公司时（如"茅台怎么样"），自动获取股票行情并添加到数据点
+        """自动识别并获取股票行情
+        通过股票映射表检测用户查询中是否包含上市公司名称，
+        如果有则调用股票API获取实时股价、涨跌幅、成交量等数据，
+        添加到 data_points 中，并发送 stock_quote 事件给前端展示
         """
         try:
             try:
@@ -460,7 +471,14 @@ URL: {url}
         search_query: str,
         results: List[Dict]
     ) -> Optional[Dict]:
-        """分析补充搜索结果"""
+        """分析补充搜索结果 - 用AI从结果中提取结构化事实
+        Args:
+            original_query: 用户原始研究问题
+            search_query: 本次补充搜索的关键词
+            results: 原始搜索结果列表
+        Returns:
+            包含 extracted_facts（事实列表）和 key_findings（关键发现）的字典
+        """
         results_text = []
         for r in results[:8]:
             results_text.append(f"标题: {r.get('title', 'N/A')}\n来源: {r.get('site_name', 'N/A')}\n内容: {r.get('summary', '')[:300]}")
@@ -508,7 +526,10 @@ URL: {url}
         return self.parse_json_response(response)
 
     def _emit_search_results_event(self, state: ResearchState) -> None:
-        """发送搜索结果事件供前端展示"""
+        """发送搜索结果给前端展示
+        从state中的facts取最近20条，格式化后通过search_results事件发送给前端，
+        供搜索结果详情面板展示
+        """
         search_results_for_ui = []
         for fact in state.get("facts", [])[-20:]:  # 取最近的20条
             search_results_for_ui.append({
@@ -527,7 +548,15 @@ URL: {url}
             })
 
     async def _research_section(self, state: ResearchState, section: Dict) -> None:
-        """研究单个章节"""
+        """研究单个章节 - 搜索信息并提取结构化内容
+        流程：
+        1. 对章节的每个搜索关键词分别执行网络搜索和本地知识库搜索
+        2. 每次搜索完成后立即发送进度事件给前端（支持流式展示）
+        3. 收集所有搜索结果后，用AI分析提取事实、数据点、实体
+        4. 将提取的内容存入state（facts/data_points/knowledge_graph/hypotheses）
+        5. 递归搜索：信源追溯（追官方数据源）+ 线索追踪（追新发现的线索）
+        6. 将章节状态标记为 "researching"
+        """
         section_id = section["id"]
         section_title = section["title"]
         search_queries = section.get("search_queries", [section_title])
@@ -799,17 +828,12 @@ URL: {url}
         depth: int = 1,
         max_depth: int = 2
     ) -> None:
-        """
-        执行深度递归搜索
-
-        Args:
-            state: 研究状态
-            section_id: 关联章节ID
-            queries: 搜索查询列表
-            search_type: 搜索类型 (source_tracing/follow_up)
-            hypotheses: 研究假设
-            depth: 当前递归深度
-            max_depth: 最大递归深度
+        """执行深度递归搜索 - 发现线索后自动往深处挖
+        支持两种递归类型：
+        - source_tracing（信源追溯）：追查原文引用的官方数据源
+        - follow_up（线索追踪）：追查新发现的搜索线索
+        递归深度默认最多2层，防止无限循环
+        每次递归都做：搜索→分析→提取→判断是否继续递归
         """
         if depth > max_depth:
             self.logger.info(f"Reached max recursion depth ({max_depth})")
@@ -934,7 +958,11 @@ URL: {url}
         search_type: str,
         hypotheses: List[Dict]
     ) -> Optional[Dict]:
-        """分析深度搜索结果"""
+        """分析深度搜索结果 - 递归搜索后的AI分析
+        与_analyze_search_results类似，但更侧重于：
+        1. 从结果中提取权威数据和官方来源
+        2. 判断是否还需要继续追溯（further_tracing_queries）
+        """
         results_text = []
         for r in results[:6]:
             results_text.append(f"标题: {r.get('title', 'N/A')}\n来源: {r.get('site_name', 'N/A')}\n内容: {r.get('summary', '')[:300]}")
@@ -996,15 +1024,15 @@ URL: {url}
         return self.parse_json_response(response)
 
     async def _execute_local_search(self, query: str, top_k: int = 10) -> List[Dict]:
-        """
-        执行本地知识库搜索 - 使用 Milvus 向量检索
-
+        """执行本地知识库搜索 - 使用Milvus向量检索
+        1. 用embedding模型将查询转为向量
+        2. 在Milvus的knowledge_base集合中做相似度搜索
+        3. 格式化结果为与网络搜索一致的格式（title/summary/url等）
         Args:
-            query: 搜索查询
-            top_k: 返回结果数量
-
+            query: 搜索文本
+            top_k: 返回最相似的top_k条结果
         Returns:
-            搜索结果列表
+            格式化后的搜索结果列表，空列表表示搜索失败或无结果
         """
         if not self.milvus_service or not MILVUS_AVAILABLE:
             self.logger.warning("Milvus service not available for local search")
@@ -1051,7 +1079,17 @@ URL: {url}
             return []
 
     async def _execute_search(self, query: str, count: int = 10) -> List[Dict]:
-        """执行网络搜索 - 使用 Bocha Web Search API"""
+        """执行网络搜索 - 调用博查(Bocha)Web Search API
+        1. 先查缓存，有直接返回
+        2. 调用API执行搜索（POST请求，30秒超时）
+        3. 解析返回结果，提取url/title/summary/site_name/date
+        4. 结果缓存起来供后续复用
+        Args:
+            query: 搜索关键词
+            count: 返回结果数量
+        Returns:
+            格式化后的搜索结果列表，空列表表示搜索失败
+        """
         # 检查缓存
         cache_key = hashlib.md5(query.encode()).hexdigest()
         if cache_key in self.search_cache:
@@ -1124,7 +1162,16 @@ URL: {url}
         results: List[Dict],
         hypotheses: List[Dict] = None
     ) -> Optional[Dict]:
-        """分析搜索结果"""
+        """用AI分析搜索结果，提取结构化信息
+        将搜索结果和假设信息填入SEARCH_ANALYSIS_PROMPT模板，
+        调用AI进行分析，返回包含以下内容的字典：
+        - extracted_facts: 提取的结构化事实（含数据点、可信度评分）
+        - hypothesis_evidence: 对研究假设的支持/反驳证据
+        - entities_discovered: 发现的新实体
+        - follow_up_queries: 需要继续深挖的线索
+        - source_tracing_queries: 需要追溯原始数据源的查询
+        - key_insights: 关键洞察
+        """
         if not results:
             return None
 
@@ -1166,11 +1213,13 @@ URL: {r.get('url', '')}
         return self.parse_json_response(response)
 
     async def deep_read_url(self, url: str, title: str, query: str) -> Optional[Dict]:
-        """
-        深度阅读网页内容
-
-        TODO: 集成 Headless Browser（如 Playwright）实现真正的网页抓取
-        目前使用简化版本
+        """深度阅读网页全文内容
+        1. 发送HTTP请求获取网页HTML
+        2. 从HTML中提取正文文本（调用_extract_text_from_html）
+        3. 让AI深度阅读提取的文本，提取关键事实、数据表格、引文等
+        TODO: 集成Headless Browser（如Playwright）实现真正的JS渲染网页抓取
+        Returns:
+            包含summary/key_facts/data_tables/quotes等内容的字典，失败返回None
         """
         try:
             # 简化版：直接获取网页内容
@@ -1210,21 +1259,17 @@ URL: {r.get('url', '')}
             return None
 
     def _extract_text_from_html(self, html: str, url: str = "", max_length: int = 12000) -> str:
-        """
-        从 HTML 中提取纯文本正文
-
-        使用多种策略提取，优先级：
-        1. trafilatura - 专业的网页正文提取库（效果最好）
-        2. BeautifulSoup - 通用 HTML 解析（备选）
-        3. 简单正则 - 最后的备选方案
-
+        """从HTML中提取纯文本正文 - 3种方法逐级备选
+        优先级：
+        1. trafilatura（专业网页正文提取库，效果最好）
+        2. BeautifulSoup（通用HTML解析，移除script/style/nav等噪音标签，优先找article/main/content区域）
+        3. 正则表达式（暴力移除所有HTML标签，最兜底）
         Args:
-            html: 原始 HTML 内容
-            url: 网页 URL（用于 trafilatura 优化）
-            max_length: 最大返回长度
-
+            html: 原始HTML内容
+            url: 网页URL（用于trafilatura优化提取）
+            max_length: 截断长度，防止文本过长
         Returns:
-            提取的纯文本
+            提取的纯文本内容
         """
         text = ""
 
@@ -1301,7 +1346,11 @@ URL: {r.get('url', '')}
         return text[:max_length]
 
     def _compute_fact_fingerprint(self, content: str) -> str:
-        """计算事实的语义指纹用于去重"""
+        """计算事实的语义指纹 - 用于去重
+        从事实内容中提取数字（如"427万辆"中的427）和关键中文词语（如"比亚迪""销量"），
+        组合成指纹字符串后取MD5哈希的前16位
+        TODO: 集成向量嵌入进行语义相似度比较（当前简化版只做关键词匹配）
+        """
         # 简化版：使用内容hash
         # TODO: 集成向量嵌入进行语义相似度比较
         import re
@@ -1312,7 +1361,12 @@ URL: {r.get('url', '')}
         return hashlib.md5(fingerprint.encode()).hexdigest()[:16]
 
     def _is_duplicate_fact(self, content: str, source_url: str) -> bool:
-        """检查事实是否重复"""
+        """检查事实是否与已有事实重复
+        1. 对内容计算指纹
+        2. 如果指纹已存在且来源不同，认为是重复（跳过）
+        3. 如果指纹已存在但来源相同，不算重复（可能是同一来源的补充信息）
+        4. 新指纹则保存到缓存
+        """
         fingerprint = self._compute_fact_fingerprint(content)
 
         # 检查指纹是否已存在
@@ -1329,7 +1383,12 @@ URL: {r.get('url', '')}
         return False
 
     def _update_knowledge_graph(self, state: ResearchState, entities: List[Dict]) -> None:
-        """更新知识图谱"""
+        """更新知识图谱 - 添加新发现的实体和关系
+        对每个新实体：
+        1. 检查是否已存在于图谱中（去重）
+        2. 添加为新节点（含名称、类型、发现时间）
+        3. 添加实体间的关系边
+        """
         graph = state.get("knowledge_graph", {"nodes": [], "edges": []})
         existing_nodes = {n.get("name") for n in graph["nodes"]}
 
@@ -1359,7 +1418,13 @@ URL: {r.get('url', '')}
         state["knowledge_graph"] = graph
 
     def _update_hypothesis_status(self, state: ResearchState, evidence: List[Dict]) -> None:
-        """根据证据更新假设状态"""
+        """根据新收集的证据更新假设的验证状态
+        状态规则：
+        - unverified（未验证）：初始状态
+        - supported（已支持）：有2条以上支持证据
+        - refuted（已反驳）：有2条以上反驳证据
+        - partially_supported（部分支持）：有不明确但相关的证据
+        """
         hypotheses = state.get("hypotheses", [])
 
         for ev in evidence:

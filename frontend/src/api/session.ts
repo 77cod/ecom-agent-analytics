@@ -127,6 +127,7 @@ export function deepsearch(
     query: string
     session_id?: string
     search_modes?: string[]  // 搜索模式: 'web' = 网络搜索, 'local' = 本地知识库
+    industry_id?: string  // 行业ID（fashion/beauty/digital/food）
   },
   options?: AxiosRequestConfig,
 ) {

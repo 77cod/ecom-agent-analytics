@@ -80,7 +80,8 @@ class DeepResearchV2Service:
         resume: bool = False,
         user_id: Optional[str] = None,
         search_web: bool = True,
-        search_local: bool = False
+        search_local: bool = False,
+        industry_id: str = "fashion"
     ) -> AsyncGenerator[str, None]:
         """
         执行深度研究（SSE 流式输出）
@@ -93,6 +94,7 @@ class DeepResearchV2Service:
             user_id: 用户ID（用于检查点）
             search_web: 是否启用网络搜索（默认True）
             search_local: 是否启用本地知识库搜索（默认False）
+            industry_id: 行业ID（fashion/beauty/digital/food，默认fashion）
 
         Yields:
             SSE 格式的事件字符串
@@ -112,7 +114,8 @@ class DeepResearchV2Service:
                 resume=resume,
                 user_id=user_id,
                 search_web=search_web,
-                search_local=search_local
+                search_local=search_local,
+                industry_id=industry_id
             ):
                 # 转换为 SSE 格式
                 yield self._format_sse(event)

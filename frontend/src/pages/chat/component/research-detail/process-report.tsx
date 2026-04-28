@@ -32,6 +32,29 @@ interface ProcessReportProps {
   knowledgeGraph?: KnowledgeGraphData  // 知识图谱
 }
 
+/** 增强图表选项，补全交互和防遮挡 */
+function enhanceChartOption(option: Record<string, unknown>, chartType?: string): Record<string, unknown> {
+  const isXY = chartType === 'line' || chartType === 'bar'
+  return {
+    ...option,
+    tooltip: { confine: true, ...(option.tooltip as Record<string, unknown> || {}) },
+    toolbox: {
+      show: true,
+      feature: {
+        ...(isXY ? { dataZoom: { show: true, title: { zoom: '区域缩放', back: '还原' } } } : {}),
+        saveAsImage: { show: true, title: '保存图片' },
+      },
+      right: 10,
+      top: -3,
+      itemSize: 13,
+    },
+    dataZoom: isXY ? (option.dataZoom || [
+      { type: 'inside', start: 0, end: 100 },
+      { type: 'slider', start: 0, end: 100, height: 18, bottom: 0 },
+    ]) : undefined,
+  }
+}
+
 // 渲染单个图表
 function ChartRenderer({ chart, inline = false }: { chart: ChartData; inline?: boolean }) {
   if (chart.image_base64) {
@@ -52,9 +75,10 @@ function ChartRenderer({ chart, inline = false }: { chart: ChartData; inline?: b
         <div className={styles.chartTitle}>📊 {chart.title}</div>
         <div className={styles.echartsWrapper}>
           <ReactECharts
-            option={chart.echarts_option}
+            option={enhanceChartOption(chart.echarts_option, chart.type)}
             style={{ height: '300px', width: '100%' }}
-            opts={{ renderer: 'canvas' }}
+            opts={{ renderer: 'canvas', locale: 'ZH' }}
+            notMerge={true}
           />
         </div>
       </div>

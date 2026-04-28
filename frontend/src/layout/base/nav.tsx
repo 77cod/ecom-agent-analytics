@@ -1,5 +1,6 @@
 
 import IconBid from '@/assets/layout/bid.svg'
+import IconDashboard from '@/assets/layout/dashboard.svg'
 import IconHistory from '@/assets/layout/history.svg'
 import IconHome from '@/assets/layout/home.svg'
 import IconKnowledge from '@/assets/layout/knowledge.svg'
@@ -7,7 +8,7 @@ import IconMemory from '@/assets/layout/memory.svg'
 import IconDatabase from '@/assets/layout/database.svg'
 import IconNewChat from '@/assets/layout/newchat.svg'
 import IconNews from '@/assets/layout/news.svg'
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useSnapshot } from 'valtio'
 import { Dropdown, message } from 'antd'
@@ -15,12 +16,18 @@ import { DownOutlined } from '@ant-design/icons'
 import { NavItem } from './nav-item'
 import { SessionDrawer } from '@/components/session-drawer'
 import { industryState, setCurrentIndustry } from '@/store/industry'
+import { sessionState, sessionActions } from '@/store/session'
 import './nav.scss'
 
 export function Nav() {
   const { pathname } = useLocation()
   const [sessionDrawerOpen, setSessionDrawerOpen] = useState(false)
   const { currentIndustryId, industries } = useSnapshot(industryState)
+  const { sessions } = useSnapshot(sessionState)
+
+  useEffect(() => { sessionActions.fetchSessions() }, [])
+
+  const latestChatHref = useMemo(() => sessions[0] ? `/chat/${sessions[0].id}` : '/chat', [sessions])
 
   const currentIndustry = useMemo(() => {
     const industry = industries.find((i) => i.id === currentIndustryId)
@@ -53,10 +60,16 @@ export function Nav() {
         href: '/',
       },
       {
+        key: 'dashboard',
+        label: '运营看板',
+        icon: IconDashboard,
+        href: '/dashboard',
+      },
+      {
         key: 'newchat',
-        label: '新的聊天',
+        label: sessions[0] ? '继续聊天' : '新的聊天',
         icon: IconNewChat,
-        href: '/chat',
+        href: latestChatHref,
       },
       {
         key: 'history',
@@ -104,7 +117,7 @@ export function Nav() {
       //   href: '#',
       // },
     ],
-    [],
+    [sessions, latestChatHref],
   )
 
   return (
@@ -148,7 +161,7 @@ export function Nav() {
           <NavItem
             key={key}
             {...item}
-            active={pathname === item.href}
+            active={item.href === '/' ? pathname === '/' : item.href !== '#' && pathname.startsWith(item.href)}
             onClick={onClick}
           />
         ))}

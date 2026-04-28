@@ -4,13 +4,14 @@ import ComPageLayout from '@/components/page-layout'
 import ComSender, { AttachmentInfo } from '@/components/sender'
 import { ChatRole, ChatType } from '@/configs'
 import { deviceActions, deviceState } from '@/store/device'
+import { industryState } from '@/store/industry'
 import { sessionState } from '@/store/session'
 import { usePageTransport } from '@/utils'
 import { useUnmount } from 'ahooks'
 import { uniqueId } from 'lodash-es'
-import { message } from 'antd'
+import { Button, message } from 'antd'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { proxy, useSnapshot } from 'valtio'
 import ChatMessage from './component/chat-message'
 import Drawer from './component/drawer'
@@ -39,6 +40,7 @@ async function scrollToBottom() {
 
 export default function Index() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { data: ctx } = usePageTransport(transportToChatEnter)
 
   const [currentChatItem, setCurrentChatItem] = useState<API.ChatItem | null>(
@@ -231,6 +233,7 @@ export default function Index() {
             query: message,
             session_id: id,  // 传递会话 ID 用于检查点保存
             search_modes: deviceState.searchModes as string[],  // 传递搜索模式
+            industry_id: industryState.currentIndustryId,  // 传递行业 ID
           })
         } else if (attachmentIds && attachmentIds.length > 0) {
           // 使用带附件的聊天接口
@@ -246,6 +249,12 @@ export default function Index() {
           })
         }
 
+        if (!res.data || typeof res.data.getReader !== 'function') {
+          console.error('Response is not a readable stream, got:', typeof res.data)
+          target.content += '\n\n[错误：服务器返回了非流式响应]'
+          return
+        }
+
         const reader = res.data.getReader()
         if (!reader) return
 
@@ -257,8 +266,6 @@ export default function Index() {
 
         // 清理 reader ref
         readerRef.current = null
-      } catch (error) {
-        throw error
       } finally {
         target.loading = false
       }
@@ -1596,10 +1603,19 @@ export default function Index() {
     return null
   }, [currentChatItem, selectedStepDetail, isDeepResearchMode, aggregatedResearchData, researchSteps, handleResearchStepClick])
 
+  const researchComplete = researchSteps.length > 0 && researchSteps.every(s => s.status === 'completed')
+
   return (
     <ComPageLayout
       sender={
         <>
+          {researchComplete && id && (
+            <div style={{ textAlign: 'center', marginBottom: 8 }}>
+              <Button type="primary" onClick={() => navigate(`/dashboard?session_id=${id}`)}>
+                查看运营看板
+              </Button>
+            </div>
+          )}
           <ComSender
             loading={loading}
             attachments={attachments}

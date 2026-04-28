@@ -33,6 +33,7 @@ class ResearchRequest(BaseModel):
     search_local: Optional[bool] = None  # 是否搜索本地知识库 (兼容旧版)
     search_modes: Optional[list] = None  # 搜索模式: ['web', 'local'] (新版)
     version: Optional[Literal["v1", "v2"]] = "v2"  # 版本选择 (v2: 多智能体架构，推荐)
+    industry_id: Optional[str] = "fashion"  # 行业ID（fashion/beauty/digital/food）
 
     class Config:
         json_schema_extra = {
@@ -110,7 +111,8 @@ async def stream_research(
                     session_id=request.session_id,
                     kb_name=request.kb_name,
                     search_web=search_web,
-                    search_local=search_local
+                    search_local=search_local,
+                    industry_id=request.industry_id or "fashion"
                 ):
                     yield event
             except Exception as e:
@@ -154,6 +156,7 @@ async def stream_research_get(
     kb_name: Optional[str] = Query(None, description="本地知识库名称"),
     search_web: bool = Query(True, description="是否搜索网络"),
     search_local: bool = Query(True, description="是否搜索本地知识库"),
+    industry_id: str = Query("fashion", description="行业ID: fashion/beauty/digital/food"),
     version: str = Query("v1", description="版本: v1 或 v2"),
     services: Dict[str, Any] = Depends(get_research_service)
 ):
@@ -184,7 +187,8 @@ async def stream_research_get(
             try:
                 async for event in service_v2.research(
                     query=query,
-                    kb_name=kb_name
+                    kb_name=kb_name,
+                    industry_id=industry_id
                 ):
                     yield event
             except Exception as e:
@@ -229,9 +233,9 @@ async def test_wizard_endpoint():
 
     使用模拟数据直接测试图表生成功能。
     """
-    from service.deep_research_v2.agents.wizard import CodeWizard
-    from service.deep_research_v2.state import ResearchState, ResearchPhase, create_initial_state
-    from config.llm_config import get_config
+    from backend.app.service.deep_research_v2.agents.wizard import CodeWizard
+    from backend.app.service.deep_research_v2.state import ResearchState, ResearchPhase, create_initial_state
+    from backend.app.config.llm_config import get_config
 
     # 使用配置创建 CodeWizard 实例
     llm_config = get_config()
@@ -370,7 +374,7 @@ async def get_checkpoint(session_id: str):
         检查点信息（不含完整状态）
     """
     try:
-        from service.checkpoint_service import get_checkpoint_service
+        from backend.app.service.checkpoint_service import get_checkpoint_service
         checkpoint_service = get_checkpoint_service()
         info = checkpoint_service.get_checkpoint_info(session_id)
         if info:
@@ -398,7 +402,7 @@ async def get_full_checkpoint(session_id: str):
         - final_report: 最终报告内容
     """
     try:
-        from service.checkpoint_service import get_checkpoint_service
+        from backend.app.service.checkpoint_service import get_checkpoint_service
         checkpoint_service = get_checkpoint_service()
         full_data = checkpoint_service.load_full_checkpoint(session_id)
         if full_data:
@@ -425,7 +429,7 @@ async def list_checkpoints(
         检查点列表
     """
     try:
-        from service.checkpoint_service import get_checkpoint_service
+        from backend.app.service.checkpoint_service import get_checkpoint_service
         checkpoint_service = get_checkpoint_service()
         checkpoints = checkpoint_service.list_checkpoints(status=status, limit=limit)
         return {"success": True, "checkpoints": checkpoints, "total": len(checkpoints)}
@@ -446,7 +450,7 @@ async def delete_checkpoint(session_id: str):
         删除结果
     """
     try:
-        from service.checkpoint_service import get_checkpoint_service
+        from backend.app.service.checkpoint_service import get_checkpoint_service
         checkpoint_service = get_checkpoint_service()
         success = checkpoint_service.delete_checkpoint(session_id)
         if success:
@@ -469,7 +473,7 @@ async def resume_research(session_id: str):
         流式响应，从检查点继续研究
     """
     try:
-        from service.checkpoint_service import get_checkpoint_service
+        from backend.app.service.checkpoint_service import get_checkpoint_service
         checkpoint_service = get_checkpoint_service()
         info = checkpoint_service.get_checkpoint_info(session_id)
 

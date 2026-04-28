@@ -111,13 +111,14 @@ df = df.dropna()
 - **去除边框**: `sns.despine()`
 - **折线图**: `linewidth=2.5, marker='o', markersize=8`，可加面积填充 `plt.fill_between()`
 - **柱状图**: 添加数值标签
+- **布局**: `plt.tight_layout(pad=2.0)` 防止文字遮挡
 - **保存**: `plt.savefig('chart.png', dpi=200, bbox_inches='tight', facecolor='white')`
 
 ## 输出格式（严格JSON，code字段用\\n表示换行）
 ```json
 {{
     "analysis_plan": "简要分析计划",
-    "code": "sns.set_theme(style='whitegrid')\\ndata = {{'Year': [2020, 2022, 2024], 'Value': [100, 150, 200]}}\\ndf = pd.DataFrame(data)\\ndf['Value'] = pd.to_numeric(df['Value'], errors='coerce')\\nplt.figure(figsize=(12, 7), dpi=200)\\nplt.plot(df['Year'], df['Value'], linewidth=2.5, marker='o', markersize=8, color='#6366f1')\\nplt.fill_between(df['Year'], df['Value'], alpha=0.15, color='#6366f1')\\nplt.title('市场规模趋势', fontsize=18, fontweight='bold')\\nplt.xlabel('年份', fontsize=14)\\nplt.ylabel('规模（亿元）', fontsize=14)\\nplt.xticks(fontsize=12)\\nplt.yticks(fontsize=12)\\nsns.despine()\\nplt.savefig('chart.png', dpi=200, bbox_inches='tight', facecolor='white')",
+    "code": "sns.set_theme(style='whitegrid')\\ndata = {{'Year': [2020, 2022, 2024], 'Value': [100, 150, 200]}}\\ndf = pd.DataFrame(data)\\ndf['Value'] = pd.to_numeric(df['Value'], errors='coerce')\\nplt.figure(figsize=(12, 7), dpi=200)\\nplt.plot(df['Year'], df['Value'], linewidth=2.5, marker='o', markersize=8, color='#6366f1')\\nplt.fill_between(df['Year'], df['Value'], alpha=0.15, color='#6366f1')\\nplt.title('市场规模趋势', fontsize=18, fontweight='bold')\\nplt.xlabel('年份', fontsize=14)\\nplt.ylabel('规模（亿元）', fontsize=14)\\nplt.xticks(fontsize=12)\\nplt.yticks(fontsize=12)\\nsns.despine()\\nplt.tight_layout(pad=2.0)\\nplt.savefig('chart.png', dpi=200, bbox_inches='tight', facecolor='white')",
     "expected_outputs": ["图表描述"]
 }}
 ```
@@ -164,7 +165,7 @@ df = df.dropna()
 ## 输出格式（严格JSON）
 ```json
 {{
-    "code": "sns.set_theme(style='whitegrid')\\ndata = {{'Year': [2020, 2022], 'Value': [100, 200]}}\\ndf = pd.DataFrame(data)\\nplt.figure(figsize=(12,7), dpi=200)\\nplt.bar(df['Year'], df['Value'], color='#6366f1')\\nplt.title('标题', fontsize=18, fontweight='bold')\\nplt.xlabel('年份', fontsize=14)\\nplt.ylabel('数值', fontsize=14)\\nplt.xticks(fontsize=12)\\nplt.yticks(fontsize=12)\\nsns.despine()\\nplt.savefig('chart.png', dpi=200, bbox_inches='tight', facecolor='white')",
+    "code": "sns.set_theme(style='whitegrid')\\ndata = {{'Year': [2020, 2022], 'Value': [100, 200]}}\\ndf = pd.DataFrame(data)\\nplt.figure(figsize=(12,7), dpi=200)\\nplt.bar(df['Year'], df['Value'], color='#6366f1')\\nplt.title('标题', fontsize=18, fontweight='bold')\\nplt.xlabel('年份', fontsize=14)\\nplt.ylabel('数值', fontsize=14)\\nplt.xticks(fontsize=12)\\nplt.yticks(fontsize=12)\\nsns.despine()\\nplt.tight_layout(pad=2.0)\\nplt.savefig('chart.png', dpi=200, bbox_inches='tight', facecolor='white')",
     "chart_description": "图表说明"
 }}
 ```
@@ -233,7 +234,8 @@ df = df.dropna()
 3. 停用词过滤（去掉"的"、"是"、"在"等常见词）
 4. 专业配色方案（推荐使用渐变色）
 5. 图表尺寸 (12, 8)
-6. 保存图片: plt.savefig('chart.png', dpi=150, bbox_inches='tight', facecolor='white')
+6. 调整布局: plt.tight_layout(pad=2.0)
+7. 保存图片: plt.savefig('chart.png', dpi=150, bbox_inches='tight', facecolor='white')
 
 输出JSON：
 ```json
@@ -287,7 +289,8 @@ df = df.dropna()
 3. 不同类型节点用不同颜色
 4. 边的粗细根据关系强度调整
 5. 添加节点标签
-6. 保存图片: plt.savefig('chart.png', dpi=150, bbox_inches='tight', facecolor='white')
+6. 调整布局: plt.tight_layout(pad=2.0)
+7. 保存图片: plt.savefig('chart.png', dpi=150, bbox_inches='tight', facecolor='white')
 
 输出JSON：
 ```json
@@ -1209,8 +1212,8 @@ df = df.dropna()
             # ========== 预设高级图表样式 ==========
             # 中文字体
             chinese_fonts = [
-                'Heiti TC', 'STHeiti', 'PingFang HK', 'Hiragino Sans GB',
-                'SimHei', 'Microsoft YaHei', 'Arial Unicode MS', 'DejaVu Sans'
+                'Microsoft YaHei', 'SimHei', 'Heiti TC', 'STHeiti',
+                'PingFang HK', 'Hiragino Sans GB', 'Arial Unicode MS', 'DejaVu Sans'
             ]
             plt.rcParams['font.sans-serif'] = chinese_fonts
             plt.rcParams['axes.unicode_minus'] = False
@@ -1241,8 +1244,8 @@ df = df.dropna()
 
             # exec 之后再次强制设置字体（防止 LLM 代码里的 sns.set() 等覆盖）
             plt.rcParams['font.sans-serif'] = [
-                'Heiti TC', 'STHeiti', 'PingFang HK', 'Hiragino Sans GB',
-                'SimHei', 'Microsoft YaHei', 'Arial Unicode MS', 'DejaVu Sans'
+                'Microsoft YaHei', 'SimHei', 'Heiti TC', 'STHeiti',
+                'PingFang HK', 'Hiragino Sans GB', 'Arial Unicode MS', 'DejaVu Sans'
             ]
             plt.rcParams['axes.unicode_minus'] = False
 
@@ -1257,7 +1260,10 @@ df = df.dropna()
             if fig.get_axes():
                 self.logger.info(f"[CodeWizard] 检测到图表，开始捕获...")
                 # 重新应用字体到当前图表的所有文本元素
-                chinese_fonts = ['Heiti TC', 'STHeiti', 'PingFang HK', 'Hiragino Sans GB', 'Arial Unicode MS']
+                chinese_fonts = [
+                    'Microsoft YaHei', 'SimHei', 'Heiti TC', 'STHeiti',
+                    'PingFang HK', 'Hiragino Sans GB', 'Arial Unicode MS', 'DejaVu Sans'
+                ]
                 for ax in fig.get_axes():
                     for text in ax.get_xticklabels() + ax.get_yticklabels():
                         text.set_fontfamily(chinese_fonts)

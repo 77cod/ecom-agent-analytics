@@ -59,6 +59,13 @@ class AgentsConfig:
         max_tokens=8000
     ))
 
+    # 数据查询器 - 替代 DeepScout，查询电商数据
+    data_queryer: AgentModelConfig = field(default_factory=lambda: AgentModelConfig(
+        model="qwen-plus",
+        temperature=0.3,
+        max_tokens=8000
+    ))
+
     # 代码极客 - 代码生成和图表绘制
     wizard: AgentModelConfig = field(default_factory=lambda: AgentModelConfig(
         model="deepseek-v3.2",
@@ -132,6 +139,7 @@ class LLMConfig:
             "architect": self.agents.architect,
             "scout": self.agents.scout,
             "data_analyst": self.agents.data_analyst,
+            "data_queryer": self.agents.data_queryer,
             "wizard": self.agents.wizard,
             "critic": self.agents.critic,
             "writer": self.agents.writer,
@@ -149,6 +157,7 @@ class LLMConfig:
                 "architect": self.agents.architect.to_dict(),
                 "scout": self.agents.scout.to_dict(),
                 "data_analyst": self.agents.data_analyst.to_dict(),
+                "data_queryer": self.agents.data_queryer.to_dict(),
                 "wizard": self.agents.wizard.to_dict(),
                 "critic": self.agents.critic.to_dict(),
                 "writer": self.agents.writer.to_dict(),

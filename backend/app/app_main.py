@@ -37,11 +37,12 @@ async def lifespan(app: FastAPI):
     # 启动时执行
     logger.info("应用启动中...")
 
-    # 初始化定时任务调度器并检查数据
+    # 初始化定时任务调度器并检查数据（后台执行，不阻塞启动）
     try:
+        import asyncio as _asyncio
         from backend.app.service.scheduler_service import init_scheduler_and_check_data
-        await init_scheduler_and_check_data()
-        logger.info("定时任务调度器启动成功")
+        _asyncio.create_task(init_scheduler_and_check_data())
+        logger.info("定时任务调度器后台启动中...")
     except Exception as e:
         logger.error(f"定时任务调度器启动失败: {e}")
 
@@ -58,8 +59,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="行业信息助手 API",
-    description="基于 AI Agent 的行业信息助手系统",
+    title="智能电商运营分析平台 API",
+    description="基于多智能体协作的智能电商运营分析平台",
     version="2.0.0",
     lifespan=lifespan
 )

@@ -8,6 +8,7 @@ DeepResearch V2.0 - Agents 模块
 from .base import BaseAgent, AgentRegistry
 from .architect import ChiefArchitect
 from .scout import DeepScout
+from .data_queryer import DataQueryer
 from .wizard import CodeWizard
 from .critic import CriticMaster
 from .writer import LeadWriter
@@ -18,6 +19,7 @@ __all__ = [
     'AgentRegistry',
     'ChiefArchitect',
     'DeepScout',
+    'DataQueryer',
     'CodeWizard',
     'CriticMaster',
     'LeadWriter',

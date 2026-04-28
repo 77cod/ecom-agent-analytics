@@ -282,8 +282,8 @@ async def add_message(
     db.add(message)
 
     # 更新会话的 updated_at
-    from datetime import datetime
-    session.updated_at = datetime.utcnow()
+    from datetime import datetime, timezone
+    session.updated_at = datetime.now(timezone.utc)
 
     # 如果是第一条用户消息，自动生成标题
     if message_data.role == "user" and session.title == "新对话":

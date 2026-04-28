@@ -7,12 +7,12 @@ import { useNavigate } from 'react-router-dom'
 import { INDUSTRY_CONFIGS, setCurrentIndustry } from '@/store/industry'
 import styles from './index.module.scss'
 
-// 行业卡片颜色配置
+// 品类卡片颜色配置
 const INDUSTRY_COLORS: Record<string, { color: string; bgColor: string }> = {
-  smart_transportation: { color: '#055588', bgColor: '#E7F4FF' },
-  finance: { color: '#1144BA', bgColor: '#EFF3FF' },
-  healthcare: { color: '#335519', bgColor: '#EDF7E6' },
-  energy: { color: '#B85C00', bgColor: '#FFF4E6' },
+  fashion: { color: '#B85C00', bgColor: '#FFF4E6' },
+  beauty: { color: '#C41D7F', bgColor: '#FFF0F6' },
+  digital: { color: '#1144BA', bgColor: '#EFF3FF' },
+  food: { color: '#335519', bgColor: '#EDF7E6' },
 }
 
 export default function Index() {
@@ -23,7 +23,7 @@ export default function Index() {
     () =>
       INDUSTRY_CONFIGS.map((industry) => ({
         id: industry.id,
-        title: `${industry.name}助手`,
+        title: `${industry.name}`,
         icon: IconSearch,
         desc: industry.description,
         color: INDUSTRY_COLORS[industry.id]?.color || '#333',
@@ -54,9 +54,9 @@ export default function Index() {
     <div className={styles['index-page']}>
       <div className={styles.header}>
         <img className={styles.bg} src={IconBg} />
-        <div className={styles.title}>Hi～欢迎来到行业咨询助手</div>
+        <div className={styles.title}>AI 电商运营分析平台</div>
         <div className={styles.desc}>
-          大模型驱动的行业资讯助手，为不同类型用户提供更便捷的AI应用开发平台
+          基于大模型的电商运营智能分析，覆盖销售、商品、竞品、达人等多维度
         </div>
       </div>
 

@@ -47,3 +47,4 @@ langfuse/
 .cache/
 *.cache
 USER_ACTION.md
+*.png

@@ -1,12 +1,12 @@
 
 """
-DeepResearch V2.0 - 数据分析师 Agent (DataAnalyst)
+电商运营分析 V2.0 - 数据分析师 Agent (DataAnalyst)
 
 职责：
-1. 从搜索结果中提取结构化数据
-2. 构建知识图谱(实体+关系)
-3. 生成可视化图表配置(ECharts)
-4. 识别数据趋势和洞察
+1. 从电商运营数据中提取结构化指标
+2. 构建商品/品牌/渠道知识图谱(实体+关系)
+3. 生成电商可视化图表配置(ECharts)
+4. 识别运营数据趋势和洞察
 """
 
 import uuid
@@ -19,31 +19,32 @@ from ..state import ResearchState, ResearchPhase
 
 class DataAnalyst(BaseAgent):
     """
-    数据分析师 - 专注于数据提取、知识图谱和可视化
+    数据分析师 - 专注于电商运营数据提取、知识图谱和可视化
 
     特点：
-    - 从文本中提取结构化数据点
-    - 构建实体关系知识图谱
+    - 从运营数据中提取结构化指标（GMV/客单价/转化率/退货率/ROI）
+    - 构建品牌-商品-渠道知识图谱
     - 生成ECharts可视化配置
-    - 识别趋势和洞察
+    - 识别运营趋势和洞察
     """
 
     # 数据提取 Prompt
-    DATA_EXTRACTION_PROMPT = """你是专业的数据分析师，擅长从文本中提取结构化数据。
+    DATA_EXTRACTION_PROMPT = """你是专业的电商数据分析师，擅长从运营数据中提取结构化指标。
 
-## 研究主题
+## 分析主题
 {query}
 
-## 搜索结果
+## 运营数据
 {search_results}
 
 ## 任务
-从以上搜索结果中提取所有可量化的数据点，包括：
-1. 市场规模数据（金额、单位、年份）
-2. 增长率数据（百分比、时间段）
-3. 市场份额数据（企业/领域、占比）
-4. 排名数据（企业、产品、技术）
-5. 时间序列数据（同一指标在不同年份的值）
+从以上运营数据中提取所有可量化的电商指标，包括：
+1. GMV/销售额数据（金额、单位、时间段）
+2. 订单量/客单价数据（数量、金额、环比变化）
+3. 转化率/退货率数据（百分比）
+4. 商品排行数据（商品名、销量、排名）
+5. 达人ROI数据（GMV/投入比）
+6. 评价情感数据（好评率、差评率、关键词）
 
 ## 输出要求
 请输出JSON格式：
@@ -52,43 +53,44 @@ class DataAnalyst(BaseAgent):
     "data_points": [
         {{
             "id": "dp_001",
-            "name": "中国AI市场规模",
-            "value": 5000,
-            "unit": "亿元",
-            "year": 2024,
-            "source": "艾瑞咨询",
-            "category": "market_size",
-            "confidence": 0.9
+            "name": "8月商品GMV",
+            "value": 2850000,
+            "unit": "元",
+            "year": 2025,
+            "source": "店铺后台数据",
+            "category": "gmv",
+            "confidence": 0.95
         }}
     ],
     "time_series": [
         {{
             "id": "ts_001",
-            "metric": "AI市场规模",
-            "unit": "亿元",
+            "metric": "商品月销售额",
+            "unit": "元",
             "data": [
-                {{"year": 2020, "value": 3200}},
-                {{"year": 2021, "value": 4100}},
-                {{"year": 2024, "value": 8500}}
+                {{"year": 2025, "month": 6, "value": 2100000}},
+                {{"year": 2025, "month": 7, "value": 2580000}},
+                {{"year": 2025, "month": 8, "value": 2850000}}
             ],
-            "source": "艾瑞咨询"
+            "source": "店铺后台数据"
         }}
     ],
     "distributions": [
         {{
             "id": "dist_001",
-            "name": "细分领域市场份额",
-            "year": 2024,
+            "name": "渠道销售额占比",
+            "year": 2025,
             "data": [
-                {{"category": "计算机视觉", "value": 32, "unit": "%"}},
-                {{"category": "自然语言处理", "value": 28, "unit": "%"}}
+                {{"category": "直播带货", "value": 45, "unit": "%"}},
+                {{"category": "天猫旗舰店", "value": 30, "unit": "%"}},
+                {{"category": "抖音商城", "value": 25, "unit": "%"}}
             ],
-            "source": "IDC"
+            "source": "渠道数据"
         }}
     ],
     "insights": [
-        "中国AI市场规模在2024年突破5000亿元",
-        "计算机视觉是最大的细分领域，占比32%"
+        "8月商品GMV达285万元，环比增长10.5%",
+        "直播带货贡献45%销售额，是核心渠道"
     ]
 }}
 ```
@@ -99,49 +101,52 @@ class DataAnalyst(BaseAgent):
 - 如果没有找到相关数据，返回空数组"""
 
     # 知识图谱构建 Prompt
-    KNOWLEDGE_GRAPH_PROMPT = """你是知识图谱专家，擅长从文本中提取实体和关系。
+    KNOWLEDGE_GRAPH_PROMPT = """你是电商知识图谱专家，擅长从运营数据中提取品牌、商品、渠道实体和关系。
 
-## 研究主题
+## 分析主题
 {query}
 
 ## 文本内容
 {content}
 
 ## 任务
-从以上文本中提取实体和关系，构建知识图谱。
+从以上内容中提取实体和关系，构建电商运营知识图谱。
 
 ## 实体类型定义
-- core: 核心概念（如：人工智能、大模型）
-- tech: 技术（如：深度学习、计算机视觉、NLP）
-- company: 企业（如：百度、阿里巴巴、华为）
-- policy: 政策（如：AI发展规划、数据安全法）
-- product: 产品（如：ChatGPT、文心一言）
-- person: 人物（如：创始人、CEO）
+- brand: 品牌（如：我方品牌、竞品品牌A、竞品品牌B）
+- product: 商品（如：主推爆款、经典款、入门款热销品）
+- channel: 渠道（如：直播带货、天猫旗舰店、抖音商城）
+- feature: 特性（如：UPF50+、透气、轻量化）
+- competitor: 竞品（如：竞品A品牌、竞品B品牌）
+- kol: 达人（如：李佳琦、某头部主播）
+- metric: 指标（如：GMV、客单价、转化率）
 
 ## 输出要求
 请输出JSON格式：
 ```json
 {{
     "nodes": [
-        {{"id": "ai", "name": "人工智能", "type": "core", "importance": 10}},
-        {{"id": "baidu", "name": "百度", "type": "company", "importance": 8}},
-        {{"id": "cv", "name": "计算机视觉", "type": "tech", "importance": 7}}
+        {{"id": "brand_1", "name": "我方品牌", "type": "brand", "importance": 10}},
+        {{"id": "product_1", "name": "主推热销款", "type": "product", "importance": 8}},
+        {{"id": "channel_1", "name": "直播带货", "type": "channel", "importance": 9}},
+        {{"id": "kol_1", "name": "达人A", "type": "kol", "importance": 7}}
     ],
     "edges": [
-        {{"source": "baidu", "target": "ai", "relation": "布局"}},
-        {{"source": "cv", "target": "ai", "relation": "属于"}},
-        {{"source": "baidu", "target": "cv", "relation": "研发"}}
+        {{"source": "brand_1", "target": "product_1", "relation": "出品"}},
+        {{"source": "product_1", "target": "channel_1", "relation": "销售于"}},
+        {{"source": "kol_1", "target": "product_1", "relation": "带货"}},
+        {{"source": "kol_1", "target": "channel_1", "relation": "直播于"}}
     ]
 }}
 ```
 
 注意：
 - importance范围1-10，表示节点重要性
-- 核心概念(core)的importance最高
+- 品牌(brand)和核心指标(metric)的importance最高
 - 提取5-15个最重要的实体
 - 关系要简洁，2-4个字"""
 
-    # 图表生成 Prompt
+    # 图表生成 Prompt（保持原始版本，由LLM根据数据自行适配）
     CHART_GENERATION_PROMPT = """你是数据可视化专家，擅长生成ECharts图表配置。
 
 ## 研究主题
@@ -337,7 +342,7 @@ class DataAnalyst(BaseAgent):
         )
 
         response = await self.call_llm(
-            system_prompt="你是专业的数据分析师，擅长从文本中提取结构化数据。请输出JSON格式。",
+            system_prompt="你是专业的电商数据分析师，擅长从运营数据中提取结构化指标。请输出JSON格式。",
             user_prompt=prompt,
             json_mode=True,
             temperature=0.2
@@ -377,7 +382,7 @@ class DataAnalyst(BaseAgent):
         )
 
         response = await self.call_llm(
-            system_prompt="你是知识图谱专家，擅长从文本中提取实体和关系。请输出JSON格式。",
+            system_prompt="你是电商知识图谱专家，擅长从运营数据中提取品牌/商品/渠道实体和关系。请输出JSON格式。",
             user_prompt=prompt,
             json_mode=True,
             temperature=0.2
@@ -424,7 +429,7 @@ class DataAnalyst(BaseAgent):
         )
 
         response = await self.call_llm(
-            system_prompt="你是数据可视化专家，擅长生成ECharts图表配置。请输出JSON格式。",
+            system_prompt="你是电商数据可视化专家，擅长生成电商运营ECharts图表配置。请输出JSON格式。",
             user_prompt=prompt,
             json_mode=True,
             temperature=0.3
@@ -470,7 +475,7 @@ class DataAnalyst(BaseAgent):
 }}"""
 
         response = await self.call_llm(
-            system_prompt="你是数据分析师，提取关键数据。",
+            system_prompt="你是电商数据分析师，提取运营关键指标。",
             user_prompt=prompt,
             json_mode=True,
             temperature=0.2

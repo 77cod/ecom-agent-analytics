@@ -1,0 +1,210 @@
+// ============================================
+// 电商运营看板 - Dashboard Styles
+// ============================================
+
+.page {
+  padding: 24px 32px;
+  max-width: 1440px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #f5f6fa;
+}
+
+// --- 空状态 ---
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+// --- 仪表盘主体 ---
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// --- KPI 行 ---
+.kpiRow {
+  margin-bottom: 0 !important;
+}
+
+.kpiCard {
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.3s;
+  overflow: hidden;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  :global(.ant-card-body) {
+    padding: 20px 24px;
+  }
+
+  :global(.ant-statistic-title) {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 4px;
+  }
+
+  :global(.ant-statistic-content) {
+    color: #1a1a1a;
+  }
+}
+
+// --- 图表行 ---
+.chartRow {
+  margin-bottom: 0 !important;
+}
+
+.chartCard {
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  min-height: 360px;
+
+  :global(.ant-card-head) {
+    border-bottom: 1px solid #f0f0f0;
+    min-height: 48px;
+  }
+
+  :global(.ant-card-head-title) {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  :global(.ant-card-body) {
+    padding: 16px 20px;
+  }
+}
+
+.emptyChart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 280px;
+  color: #bbb;
+  font-size: 14px;
+}
+
+// --- 表格行 ---
+.tableRow {
+  margin-bottom: 0 !important;
+}
+
+.tableCard {
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+  :global(.ant-card-head) {
+    border-bottom: 1px solid #f0f0f0;
+    min-height: 48px;
+  }
+
+  :global(.ant-card-head-title) {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  :global(.ant-card-body) {
+    padding: 12px 16px;
+  }
+
+  :global(.ant-table) {
+    font-size: 13px;
+  }
+
+  :global(.ant-table-thead > tr > th) {
+    background: #fafafa;
+    font-weight: 600;
+    color: #555;
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  :global(.ant-table-tbody > tr > td) {
+    padding: 8px 12px;
+  }
+}
+
+// --- AI 建议面板 ---
+.recommendCard {
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+  :global(.ant-card-head) {
+    border-bottom: 1px solid #f0f0f0;
+    min-height: 48px;
+  }
+
+  :global(.ant-card-head-title) {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  :global(.ant-card-body) {
+    padding: 12px 16px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+}
+
+.recommendList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.recommendItem {
+  padding: 14px 16px;
+  background: #fafbfc;
+  border-radius: 8px;
+  border: 1px solid #eef0f5;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: #d0d5e0;
+  }
+
+  .recommendHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+
+    strong {
+      font-size: 14px;
+      color: #1a1a1a;
+    }
+  }
+
+  .recommendBody {
+    p {
+      margin: 4px 0;
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+
+      span {
+        color: #999;
+        margin-right: 4px;
+      }
+    }
+  }
+}
+
+// --- 响应式 ---
+@media (max-width: 768px) {
+  .page {
+    padding: 12px 16px;
+  }
+}

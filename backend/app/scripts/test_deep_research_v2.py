@@ -1,14 +1,15 @@
 
 """
-DeepResearch V2.0 端到端测试
+DeepResearch V2.0 端到端测试 (Legacy)
 
 测试完整的多智能体研究工作流程：
 1. ChiefArchitect - 规划研究大纲
-2. DeepScout - 执行网络搜索（Bocha API）
-3. CodeWizard - 数据分析
+2. DataQueryer - 查询电商数据（替代原 DeepScout 搜索）
+3. DataAnalyst + CodeWizard - 数据分析与可视化
 4. LeadWriter - 撰写报告
 5. CriticMaster - 审核质量
 
+注意：此测试文件部分内容已过时，事件类型可能与当前实现不完全匹配。
 使用方法：
     python -m scripts.test_deep_research_v2
 """

@@ -1,12 +1,12 @@
 
 """
-DeepResearch V2.0 - 总架构师 Agent (ChiefArchitect)
+电商运营分析 V2.0 - 分析架构师 Agent (ChiefArchitect)
 
 职责：
-1. 意图解码 - 深度理解用户问题
-2. 知识图谱初始化 - 识别关键实体和关系
-3. 动态大纲生成 - 创建可执行的研究计划
-4. 进度监控 - 根据研究进展动态调整大纲
+1. 意图解码 - 深度理解用户的电商运营分析需求
+2. 知识图谱初始化 - 识别关键品牌/商品/渠道和关系
+3. 动态分析维度生成 - 创建可执行的运营分析计划
+4. 进度监控 - 根据数据发现动态调整分析维度
 """
 
 import uuid
@@ -19,87 +19,73 @@ from ..state import ResearchState, ResearchPhase
 
 class ChiefArchitect(BaseAgent):
     """
-    总架构师 - 研究规划的大脑
+    分析架构师 - 运营分析规划的大脑
 
     特点：
     - 动态DAG调度
-    - 大局观，能看到全貌
-    - 根据新发现调整计划
+    - 大局观，能看到电商运营全貌
+    - 根据数据发现调整分析计划
     """
 
-    PLANNING_PROMPT = """研究课题：{query}
+    REVISION_PROMPT = """当前分析课题：{query}
 
-请为该课题生成研究大纲和研究假设，输出JSON格式如下：
+现有分析大纲：
+{current_outline}
+
+新发现的事实：
+{new_findings}
+
+已完成章节数：{completed_sections}
+已收集事实数：{facts_count}
+已收集数据点：{data_points_count}
+
+请判断是否需要修订分析大纲，输出JSON：
+{{
+  "needs_revision": true/false,
+  "revision_reason": "如果需要修订，说明原因",
+  "revised_outline": [如果需要修订，输出修订后的大纲，与初始大纲格式相同]
+}}"""
+
+    PLANNING_PROMPT = """分析课题：{query}
+
+请为该电商运营分析课题生成分析维度和分析假设，输出JSON格式如下：
 
 {{
-  "hypothesis_1": "关于市场/行业趋势的假设（需要验证）",
-  "hypothesis_2": "关于竞争格局或技术发展的假设（需要验证）",
-  "hypothesis_3": "关于政策或外部因素影响的假设（需要验证）",
-  "sec_1_title": "市场概况",
-  "sec_1_desc": "描述市场规模、增速",
-  "sec_1_query": "搜索关键词",
-  "sec_2_title": "竞争格局",
-  "sec_2_desc": "描述主要企业",
-  "sec_2_query": "搜索关键词",
-  "sec_3_title": "技术趋势",
-  "sec_3_desc": "描述核心技术",
-  "sec_3_query": "搜索关键词",
-  "sec_4_title": "政策环境",
-  "sec_4_desc": "描述相关政策",
-  "sec_4_query": "搜索关键词",
-  "sec_5_title": "挑战机遇",
-  "sec_5_desc": "描述挑战和机会",
-  "sec_5_query": "搜索关键词",
-  "sec_6_title": "未来展望",
-  "sec_6_desc": "描述发展趋势",
-  "sec_6_query": "搜索关键词",
+  "hypothesis_1": "关于销售额/GMV趋势的假设（需要数据验证）",
+  "hypothesis_2": "关于品类/商品表现的假设（需要数据验证）",
+  "hypothesis_3": "关于竞品或渠道效果的假设（需要数据验证）",
+  "sec_1_title": "销售概况",
+  "sec_1_desc": "分析GMV、订单量、客单价趋势",
+  "sec_1_query": "销售数据关键词",
+  "sec_2_title": "商品排行",
+  "sec_2_desc": "各商品销量、销售额排名及环比变化",
+  "sec_2_query": "商品排行关键词",
+  "sec_3_title": "评价分析",
+  "sec_3_desc": "好评率、差评关键词、用户情感分析",
+  "sec_3_query": "用户评价关键词",
+  "sec_4_title": "竞品动态",
+  "sec_4_desc": "竞品销量、价格、促销对比",
+  "sec_4_query": "竞品信息关键词",
+  "sec_5_title": "达人ROI",
+  "sec_5_desc": "达人带货GMV、ROI分析",
+  "sec_5_query": "达人带货关键词",
+  "sec_6_title": "定价策略",
+  "sec_6_desc": "价格带分布、折扣力度分析",
+  "sec_6_query": "定价策略关键词",
   "questions": "核心问题1;核心问题2;核心问题3"
 }}
 
-研究假设示例：
-- 假设市场规模将持续增长，需要用数据验证增速
-- 假设某类技术会成为主流，需要找证据支持或反驳
-- 假设政策变化会影响行业格局，需要分析政策走向
+分析假设示例：
+- 假设本月GMV将环比增长，需要销售数据验证增速
+- 假设某品类会成为爆款，需要找销量数据支持或反驳
+- 假设促销活动会显著影响转化率，需要分析活动期间数据
 
-请根据研究课题填写具体内容，每个字段都是字符串类型。"""
-
-    REVISION_PROMPT = """你是总架构师，需要根据研究进展动态调整大纲。
-
-## 原始问题
-{query}
-
-## 当前大纲
-{current_outline}
-
-## 新发现的重要信息
-{new_findings}
-
-## 当前进度
-- 已完成章节: {completed_sections}
-- 收集的事实数量: {facts_count}
-- 发现的数据点: {data_points_count}
-
-## 任务
-评估是否需要调整大纲。可能的调整包括：
-1. 新增章节（发现了重要的新方向）
-2. 删除章节（发现某方向信息太少）
-3. 调整章节顺序或优先级
-4. 细化或合并章节
-
-输出JSON格式：
-```json
-{{
-    "needs_revision": true或false,
-    "revision_reason": "调整原因",
-    "revised_outline": [...],  // 如果needs_revision为true
-    "new_search_queries": ["新增的搜索关键词"]  // 如果需要补充搜索
-}}
-```"""
+请根据分析课题填写具体内容，每个字段都是字符串类型。"""
 
     def __init__(self, llm_api_key: str, llm_base_url: str, model: str = "qwen-max"):
         super().__init__(
             name="ChiefArchitect",
-            role="总架构师",
+            role="分析架构师",
             llm_api_key=llm_api_key,
             llm_base_url=llm_base_url,
             model=model
@@ -194,11 +180,11 @@ class ChiefArchitect(BaseAgent):
 
         for attempt in range(max_retries + 1):
             response = await self.call_llm(
-                system_prompt="你是一位专业的行业研究规划师。请严格按照要求的JSON格式输出，不要添加任何额外内容。",
+                system_prompt="你是一位专业的电商运营分析师。请严格按照要求的JSON格式输出，不要添加任何额外内容。",
                 user_prompt=prompt,
                 json_mode=True,
                 temperature=0.3,
-                max_tokens=16000  # 拉满到最大值
+                max_tokens=8000
             )
 
             # Debug: 记录原始响应
@@ -226,15 +212,15 @@ class ChiefArchitect(BaseAgent):
             if attempt < max_retries:
                 self.logger.warning(f"Outline generation failed or incomplete, retrying... (attempt {attempt + 1})")
                 # 简化提示词重试
-                prompt = f"""请为"{state['query']}"生成研究大纲。
+                prompt = f"""请为"{state['query']}"生成电商运营分析大纲。
 
 输出JSON格式：
 {{"outline": [
-    {{"id": "sec_1", "title": "章节标题", "description": "描述", "section_type": "mixed", "requires_data": true, "requires_chart": false, "search_queries": ["关键词1", "关键词2"]}},
-    ...更多章节(共5-8个)...
+    {{"id": "sec_1", "title": "分析维度标题", "description": "描述", "section_type": "mixed", "requires_data": true, "requires_chart": false, "search_queries": ["关键词1", "关键词2"]}},
+    ...更多分析维度(共5-8个)...
 ], "research_questions": ["问题1", "问题2", "问题3"], "key_entities": []}}
 
-要求：outline必须包含5-8个章节，覆盖市场概况、企业竞争、技术趋势、政策环境、未来展望等方面。"""
+要求：outline必须包含5-8个分析维度，覆盖销售概况、商品排行、评价分析、竞品动态、达人ROI、定价策略等方面。"""
 
         if not result:
             state["errors"].append("Failed to generate research plan after retries")
@@ -333,7 +319,7 @@ class ChiefArchitect(BaseAgent):
         )
 
         response = await self.call_llm(
-            system_prompt="你是总架构师，需要判断是否需要调整研究计划。",
+            system_prompt="你是电商运营分析架构师，需要判断是否需要调整分析计划。",
             user_prompt=prompt,
             json_mode=True
         )
