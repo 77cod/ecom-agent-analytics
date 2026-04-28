@@ -1,201 +1,123 @@
-# 智能电商运营分析平台
+# 《智能电商运营分析平台 从0到1完全学习手册》
 
-基于多智能体协作（Multi-Agent）的电商运营深度研究平台。用户选择行业后输入问题，7 个 AI Agent 协作完成从问题分析、数据查询、可视化到报告生成的全流程，最终输出可交互的运营看板。
+> 一本 100% 基于真实项目的工程化学习教程 —— 从环境搭建到多智能体协作系统，手把手带你从 0 到 1 掌握全栈 AI 应用开发。
 
-## 系统架构
+## 这本书能让你学到什么
 
-```
-┌─────────────┐     SSE 流式     ┌──────────────────────────────────┐
-│   React 19  │ ◄────────────── │        FastAPI (Python)          │
-│  Ant Design │                 │                                  │
-│   ECharts   │                 │  ┌────────────────────────────┐  │
-│   Valtio    │                 │  │   DeepResearch Graph       │  │
-└──────┬──────┘                 │  │                            │  │
-       │                        │  │ Plan → Query → Analyze     │  │
-       │ 行业选择                │  │   → Write → Review → Done │  │
-       │ fashion/beauty/        │  │                            │  │
-       │ digital/food           │  └────────────┬───────────────┘  │
-       │                        │               │                  │
-       ▼                        │  ┌────────────▼───────────────┐  │
-┌──────────────┐                │  │      7 个 AI Agent          │  │
-│  运营看板     │                │  │  ChiefArchitect (规划)      │  │
-│  KPI + 图表  │                │  │  DataQueryer (数据查询)     │  │
-│  竞品/达人   │                │  │  DataAnalyst (数据分析)     │  │
-└──────────────┘                │  │  CodeWizard (代码+图表)     │  │
-                                │  │  LeadWriter (报告撰写)      │  │
-                                │  │  CriticMaster (对抗审核)    │  │
-                                │  │  DeepScout (网络搜索)       │  │
-                                │  └────────────────────────────┘  │
-                                │                                  │
-                                │  PostgreSQL + Redis + Milvus     │
-                                └──────────────────────────────────┘
-```
+- 7 个 AI Agent 如何协作完成复杂的运营分析任务
+- React 19 + TypeScript + Ant Design 5 的企业级前端开发
+- FastAPI + LangGraph 的后端架构设计与异步编程
+- ECharts 交互式数据可视化与 SSE 流式推送
+- PostgreSQL + Redis + Milvus 多数据库协同
+- Docker Compose 一键部署微服务基础设施
 
-## 技术栈
+## 📖 书籍目录
 
-| 层级 | 技术 |
-|------|------|
-| 前端 | React 19 / TypeScript / Vite / Ant Design 5 / ECharts / Valtio |
-| 后端 | FastAPI / LangGraph / SQLAlchemy / Python 3.10+ |
-| 数据库 | PostgreSQL 15 / Redis 7 / Milvus 2.3 (向量) / Elasticsearch 8 |
-| AI | 阿里百炼 DashScope (DeepSeek-V3.2 / Qwen-Plus / Qwen-Max) |
-| 基础设施 | Docker Compose |
+| 章节 | 文件 | 核心内容 | 适合谁 |
+|------|------|----------|--------|
+| 前言 | [00-前言.md](docs/00-前言.md) | 项目简介、学习路线、前置准备 | 所有人 |
+| 第1章 | [01-项目全貌速览.md](docs/01-项目全貌速览.md) | 5分钟跑起来、技术栈全览、目录结构 | 新手入门 |
+| 第2章 | [02-开发环境搭建全攻略.md](docs/02-开发环境搭建全攻略.md) | 工具安装、Docker启动、API配置 | 新手入门 |
+| 第3章 | [03-项目架构与核心设计原理.md](docs/03-项目架构与核心设计原理.md) | 分层架构、Agent状态机、SSE原理 | 有基础者 |
+| 第4章 | [04-核心代码逐行精讲.md](docs/04-核心代码逐行精讲.md) | 逐文件逐行精读后端+前端代码 | 所有人 |
+| 第5章 | [05-项目调试与排错指南.md](docs/05-项目调试与排错指南.md) | 调试工具、日志排查、15+常见报错 | 遇到问题者 |
+| 第6章 | [06-项目优化与功能扩展实战.md](docs/06-项目优化与功能扩展实战.md) | 添加新行业、新图表、性能优化 | 想扩展者 |
+| 第7章 | [07-全流程复盘与结业指南.md](docs/07-全流程复盘与结业指南.md) | 知识体系复盘、实战任务、面试题 | 所有人 |
 
-## 快速开始
+## 📚 附录
 
-### 1. 克隆仓库
+| 附录 | 文件 | 内容 |
+|------|------|------|
+| 术语表 | [appendix/术语表.md](docs/appendix/术语表.md) | 全书专业术语的中英文对照和解释 |
+| 命令速查 | [appendix/常用命令速查手册.md](docs/appendix/常用命令速查手册.md) | Docker/Git/Python/Node 常用命令 |
+| 报错排雷 | [appendix/常见报错排雷大全.md](docs/appendix/常见报错排雷大全.md) | 15+ 个真实错误及解决方案 |
+| Git规范 | [appendix/Git标准化规范手册.md](docs/appendix/Git标准化规范手册.md) | 分支策略、提交规范、冲突解决 |
+
+## 🚀 快速开始
+
+### 30 秒体验
 
 ```bash
-git clone https://github.com/77cod/ecom-agent-analytics.git
-cd ecom-agent-analytics
-```
-
-### 2. 启动基础设施
-
-```bash
+# 1. 启动基础设施
 docker compose up -d
-```
 
-这会在后台启动 PostgreSQL、Redis、Milvus、Elasticsearch、MinIO、etcd。
+# 2. 配置 API Key
+echo 'DASHSCOPE_API_KEY=你的key' > backend/.env
 
-### 3. 配置环境变量
-
-**后端** (`backend/.env`)：
-```env
-DASHSCOPE_API_KEY=your-dashscope-api-key
-BOCHA_API_KEY=your-bocha-search-key
-DATABASE_URL=postgresql://postgres:postgres123@localhost:5432/industry_assistant
-```
-
-**前端** (`frontend/.env`)：
-```env
-VITE_TITLE=智能电商运营分析平台
-VITE_API_BASE=http://localhost:8000/
-```
-
-### 4. 安装依赖
-
-```bash
-# 后端
-cd backend
-pip install -r requirements.txt
-
-# 前端
-cd frontend
-npm install
-```
-
-### 5. 启动服务
-
-```bash
-# 终端 1 - 后端
-cd backend
+# 3. 启动后端
+cd backend && pip install -r requirements.txt
 python -m uvicorn app.app_main:app --reload --port 8000
 
-# 终端 2 - 前端
-cd frontend
-npm run dev
+# 4. 启动前端（新终端）
+cd frontend && npm install && npm run dev
+
+# 5. 打开浏览器
+# http://localhost:5173
 ```
 
-访问 `http://localhost:5173` 即可使用。
+详细步骤见 [第 1 章](docs/01-项目全貌速览.md) 和 [第 2 章](docs/02-开发环境搭建全攻略.md)。
 
-## Agent 流水线
+## 🎯 这个项目是做什么的
+
+一句话：**选行业 → 输入运营分析问题 → 7 个 AI Agent 自动协作 → 生成分析报告 + 图表 + 运营看板**。
 
 ```
-用户输入 "分析美妆精华液销售趋势"
+用户："分析美妆精华液本月销售趋势"
     │
     ▼
-┌─────────────────┐
-│ ChiefArchitect   │  分析问题 → 生成分析维度 + 研究假设
-│ (deepseek-v3.2)  │  输出: outline, hypotheses, key_entities
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│ DataQueryer      │  根据大纲查询 mock 电商数据
-│ (qwen-plus)      │  按行业自动切换数据集
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│ DataAnalyst      │  提取结构化指标 (GMV/ROI/转化率/好评率)
-│ + CodeWizard     │  生成 Python 代码 → 执行 → ECharts + matplotlib 图表
-│ (deepseek-v3.2)  │
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│ LeadWriter       │  逐章节撰写 Markdown 运营分析报告
-│ (deepseek-v3.2)  │
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│ CriticMaster     │  对抗式审核: 幻觉检测、逻辑校验、证据核实
-│ (deepseek-v3.2)  │  评分 < 6.0 → 打回修订 (最多 3 轮)
-└────────┬────────┘
-         ▼
-    SSE 流式输出 → 前端渲染 → 运营看板
+┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+│ ① Architect  │→│ ② DataQueryer│→│ ③ Analyst    │
+│   分析架构师  │  │   数据查询员  │  │ + CodeWizard │
+│   拆解问题   │  │   查数据库   │  │   分析+图表  │
+└──────────────┘  └──────────────┘  └──────────────┘
+                                            │
+                    ┌───────────────────────┘
+                    ▼
+┌──────────────┐  ┌──────────────┐
+│ ⑤ Critic    │←│ ④ Writer     │
+│   毒舌审核   │  │   撰写报告   │
+│   打分修订   │  │   整合全文   │
+└──────────────┘  └──────────────┘
 ```
 
-## 四个行业与 Mock 数据
+## 💡 怎么读这本书
 
-| 行业 | 品牌 | 品类 | 数据集 |
-|------|------|------|--------|
-| 服装鞋包 | 夏日轻盈 | 防晒衣/冰袖/渔夫帽 | `ecommerce_mock_data.py` |
-| 美妆个护 | 兰芮 L'ANRAY | 精华液/面霜/面膜 | `ecommerce_mock_data_beauty.py` |
-| 数码家电 | 聆韵 LINGVIBE | TWS降噪耳机/充电宝 | `ecommerce_mock_data_digital.py` |
-| 食品饮料 | 茶屿 CHAYU | 冷泡茶/茶礼盒/养生茶 | `ecommerce_mock_data_food.py` |
+- **想快速体验**：读第 1 章，30 分钟跑起来
+- **想彻底搞懂**：按顺序从第 1 章读到第 7 章
+- **遇到了 bug**：直接翻第 5 章和附录"报错排雷大全"
+- **想加新功能**：看第 6 章的实战案例
+- **准备面试**：看第 7 章的面试题
 
-每个数据集包含：10 商品 + 月度销售 + 100 订单 + 20 评价 + 7 达人 + 价格监控 + 热词趋势 + 退货记录，且埋有预设的分析故事线（竞品反超、达人ROI差异、品类趋势等）。
+每一章都包含：**知识讲解 → 真实代码 → 动手操作 → 避坑提醒 → 要点回顾**。
 
-## API 概览
+## 📂 项目仓库
 
-| 端点 | 用途 | 响应 |
-|------|------|------|
-| `POST /auth/login` | 用户登录 | JWT Token |
-| `GET /sessions` | 会话列表 | Session[] |
-| `POST /sessions/:id/messages` | 发送消息 | 流式 SSE |
-| `POST /research/stream` | 深度研究 | SSE 流式 |
-| `POST /research/resume/:id` | 恢复研究 | SSE 流式 |
-| `POST /research/cancel/:id` | 取消研究 | JSON |
-| `GET /research/checkpoint/:id` | 检查点信息 | JSON |
-| `GET /knowledge-bases` | 知识库列表 | KnowledgeBase[] |
-| `POST /knowledge-bases/:id/documents` | 上传文档 | JSON |
-| `GET /news/list` | 行业资讯 | 分页列表 |
-| `GET /database/tables` | 数据库表列表 | TableInfo[] |
-| `POST /database/text2sql` | 自然语言查表 | SQL + Data |
-| `POST /chat/completion` | RAG 对话 | SSE 流式 |
+- GitHub: [https://github.com/77cod/ecom-agent-analytics](https://github.com/77cod/ecom-agent-analytics)
 
-## 目录结构
+## 🔧 在 GitHub Pages 上看这本书
 
-```
-├── backend/
-│   └── app/
-│       ├── app_main.py               # FastAPI 入口
-│       ├── config/                   # 行业/LLM 配置
-│       ├── core/                     # 数据库、Redis、鉴权
-│       ├── models/                   # SQLAlchemy ORM
-│       ├── router/                   # 11 个路由模块
-│       ├── schemas/                  # Pydantic 模型
-│       ├── service/
-│       │   └── deep_research_v2/     # ★ 多智能体核心
-│       │       ├── agents/           # 7 个 Agent
-│       │       ├── state.py          # 全局状态
-│       │       ├── graph.py          # 工作流编排
-│       │       └── service.py        # SSE 服务
-│       └── scripts/                  # 测试/种子数据
-├── frontend/
-│   └── src/
-│       ├── api/                      # API 层
-│       ├── components/               # Chart/Markdown/Sender
-│       ├── layout/base/              # 侧边栏布局
-│       ├── pages/
-│       │   ├── chat/                 # 聊天 + 深度研究
-│       │   ├── dashboard/            # 运营看板
-│       │   ├── knowledge/            # 知识库管理
-│       │   ├── database/             # 数据库浏览器
-│       │   └── news/                 # 行业资讯
-│       └── store/                    # Valtio 状态
-└── docker-compose.yml                # 基础设施
+### 方法一：直接浏览（推荐）
+
+所有章节都是标准 Markdown 文件，在 GitHub 上点击即可直接阅读，GitHub 会自动渲染格式。
+
+### 方法二：部署为网页
+
+```bash
+# 安装 docsify（一个轻量的文档站点生成器）
+npm install -g docsify-cli
+
+# 在项目根目录执行
+docsify init ./docs
+docsify serve ./docs
+
+# 打开 http://localhost:3000 即可看到书籍网站
 ```
 
-## License
+或者使用 GitHub Pages：
+1. 在仓库 Settings → Pages 中
+2. Source 选择 `main` 分支，文件夹选 `/docs`
+3. 保存后访问 `https://77cod.github.io/ecom-agent-analytics/`
 
-MIT
+---
+
+> 翻开 [第 1 章](docs/01-项目全貌速览.md)，开始你的学习之旅！
